@@ -6,6 +6,8 @@
 ##	aimed at piping to other utilities - grepping for repeated 
 ##	configuration, for example.
 
+##	Comment out line 34 (print $_) and uncomment line 21 (say $filename)
+##	to just get a list of config files.
 
 use strict;
 use 5.010;
@@ -15,27 +17,27 @@ my $fhcount = 1;
 
 &walk_file($conf);
 
-
 sub walk_file() {
-	my $filename = $_[0];
-	my $fh = "fh".$fhcount;
-	$fhcount++;
-	open (my $fh, "< $filename") or die ("Error opening file: $filename");
-	while(<$fh>){
-		given ($_){
-			when ((/^#/) || (/^$/)){
-				print "";
-			}
-			when (/^Include/){
-				&include($_);
-			}
-			default{
-				print;
+		my $filename = $_[0];
+#		say $filename;
+		my $fh = "fh".$fhcount;
+		$fhcount++;
+		open (my $fh, "< $filename") or die ("Error opening file: $filename");
+		while(<$fh>){
+			given ($_){
+				when ((/^#/) || (/^$/)){
+					print "";
+				}
+				when (/^Include/){
+					&include($_);
+				}
+				default{
+						print $_;
+				}
 			}
 		}
-	}
-	close($fh)
-}	
+		close($fh)
+	}	
 
 sub include() {
 	my @line = split(/\s/, $_);
