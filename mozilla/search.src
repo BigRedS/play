@@ -1,0 +1,12 @@
+<search
+	version="0"
+	name="Firefox Search Extensions"
+	description="Search firefox search extensions"
+	action="http://addons.mozilla.org/en-US/firefox/search"
+	searchForm="http://addon.mozilla.org/"
+	method="GET"
+>
+
+<input name="cat" user="4%2C0">
+
+</search>

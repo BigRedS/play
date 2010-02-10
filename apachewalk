@@ -1,0 +1,61 @@
+#! /usr/bin/perl
+
+use strict;
+use 5.010;
+
+my $conf = "/etc/apache2/apache2.conf";
+my $fhcount = 1;
+
+&walk_file($conf);
+
+
+sub walk_file() {
+	my $filename = $_[0];
+	my $fh = "fh".$fhcount;
+	$fhcount++;
+	say $filename;
+	open (my $fh, "< $filename") or die ("Error opening file: $filename");
+	while(<$fh>){
+		given ($_){
+			when ((/^#/) || (/^$/)){
+				print "";
+			}
+			when (/^Include/){
+				&include($_);
+			}
+			default{
+			}
+		}
+	}
+}	
+
+sub include() {
+	my @line = split(/\s/, $_);
+	my $path = pop(@line);
+	chomp $path;
+	if(($path =~ /\*/) || ($path =~ /\/$/)){
+		$path =~ s/\/$/\/\*/;
+		foreach(glob($path)){
+			&walk_file($_);
+		}
+	}else{
+		if(-f $path && -s $path){
+			&walk_file($path);
+		}elsif(-d $path){
+			&walk_dir($path);
+		}else{
+			if (-s $path){
+				last;
+			}
+		}
+	}
+}
+
+
+sub walk_dir() {
+	my $dirname = shift;
+	opendir(DIR, $dirname);
+	foreach(sort(readdir(DIR))){
+		&walk_file($_) if ($_ !~ /^./);
+	}
+}
