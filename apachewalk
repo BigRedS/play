@@ -34,6 +34,7 @@ sub walk_file() {
 			}
 		}
 	}
+	close($fh)
 }	
 
 sub include() {
