@@ -1,5 +1,12 @@
 #! /usr/bin/perl
 
+##	This script walks your apache configuration beginning from 
+##	the file defined in $conf. It follows all includes and prints
+##	to stdout everything that is neither comment nor include. It's 
+##	aimed at piping to other utilities - grepping for repeated 
+##	configuration, for example.
+
+
 use strict;
 use 5.010;
 
@@ -13,7 +20,6 @@ sub walk_file() {
 	my $filename = $_[0];
 	my $fh = "fh".$fhcount;
 	$fhcount++;
-	say $filename;
 	open (my $fh, "< $filename") or die ("Error opening file: $filename");
 	while(<$fh>){
 		given ($_){
@@ -24,6 +30,7 @@ sub walk_file() {
 				&include($_);
 			}
 			default{
+				print;
 			}
 		}
 	}
