@@ -1,0 +1,30 @@
+#! /usr/bin/perl
+
+# Handy script to make commonly-repeated ftp uploads
+# quicker and more painless.
+
+use strict;
+
+use Net::FTP;
+
+my $hostname="localhost";
+my $username="username";
+my $file = $ARGV[0];
+my $cwd="www";
+my $password="ReallySecurePassword";
+
+my $ftp;
+
+$ftp = Net::FTP->new("$hostname", Debug => 0)
+	or die("Error connecting: ", $ftp->message);
+
+$ftp->login($username, $password)
+	or die("Error logging in: ", $ftp->message);
+
+if ($cwd){
+	$ftp->cwd($cwd)
+		or die("cwd (to $cwd) failed: ", $ftp->message);
+}
+
+$ftp->put($file)
+	or die("Put failed: ", $ftp->message);
