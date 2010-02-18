@@ -7,24 +7,29 @@ use strict;
 
 use Net::FTP;
 
-my $hostname="localhost";
-my $username="username";
-my $file = $ARGV[0];
+## Credentials:
+my $hostname="localhost";	
+my $username="username";	
+my $password="Password";
+
+# Once we're connected, we'll cd to this dir:
 my $cwd="www";
-my $password="ReallySecurePassword";
+# And upload this file (the first argument):
+my $file = $ARGV[0];
+
+##
 
 my $ftp;
-
 $ftp = Net::FTP->new("$hostname", Debug => 0)
-	or die("Error connecting: ", $ftp->message);
+  or die("Error connecting: ", $ftp->message);
 
 $ftp->login($username, $password)
-	or die("Error logging in: ", $ftp->message);
+  or die("Error logging in: ", $ftp->message);
 
 if ($cwd){
 	$ftp->cwd($cwd)
-		or die("cwd (to $cwd) failed: ", $ftp->message);
+	  or die("cwd (to $cwd) failed: ", $ftp->message);
 }
 
 $ftp->put($file)
-	or die("Put failed: ", $ftp->message);
+  or die("Put failed: ", $ftp->message);
