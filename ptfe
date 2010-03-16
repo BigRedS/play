@@ -7,10 +7,27 @@ use strict;
 
 use Net::FTP;
 
+#my $config_file = "$ENV{HOME}/.ptfe";
+my $config_file = "./.ptfe";
+my %config;
+open (F, "<$config_file");
+while(<>){
+	chomp;
+	my($key,$value)=(split(/=/, $_))[0,1];
+
+	$config{$key}=$value;
+}
+close F;
+
+
+print $config{username};
+exit 0;
+
 ## Credentials:
 my $hostname="localhost";	
 my $username="username";	
 my $password="Password";
+
 
 # Once we're connected, we'll cd to this dir:
 my $cwd="www";
