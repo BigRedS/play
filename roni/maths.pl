@@ -21,7 +21,7 @@
 use 5.010;
 
 ## subs implementing questions must be a member of this array:
-my @questions = ("test");
+my @questions = ("differentiation", "test");
 
 &usage if ($ARGV[0] =~ /\D/);
 
@@ -96,20 +96,18 @@ sub quiz(){
 ## false (well, undef) otherwise.
 sub ask_question() {
 	my $q;
-#	if($_[0] !~ /\w+/){
-#		my $num_qs = @questions;
-#		$q = $questions[int(rand($num_qs))];
-#	}else{
-#		$q = $_[0];
-#	}
-#	my ($question, $answer) = &{$q}();
-	my ($question, $answer) = &test;
-	chomp($question, $answer);
+	if($_[0] !~ /\w+/){
+		my $num_qs = @questions;
+		$q = $questions[int(rand($num_qs))];
+	}else{
+		$q = $_[0];
+	}
+	my ($question, $answer) = &{$q}();
+#	my ($question, $answer) = &differentiation;
 	say $question;
 	say "($answer)";
-	$guess = (<>);
-	chomp $guess;
-	if ($quess == $answer){
+	my $guess = <STDIN>;
+	if ($guess == $answer){
 		say "Correct";
 		return "correct";
 	}else{
