@@ -9,13 +9,12 @@ for ($i = 0; $i < $max; $i++){
 	my ($question, $answer) = &differentiation();
 	print $i+1;
 	say "\t$question";
-	say ($answer);
 	my $guess = <STDIN>;
 	if ( $guess == $answer ){
 		print "whoop!\n";
 		$correct++;
 	}else{
-		print "Nope - $answer";
+		print "Nope - expected: $answer";
 	}
 	say "";
 }
