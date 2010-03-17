@@ -1,8 +1,24 @@
 <?php
 
-top();
+/* Handy hints for when you come to edit this */
+
+// Lines begininning // (such as this) and text enclosed in /* and */
+// (such as the above) are comments and ignored by PHP. 
+// Generally, the outputted HTML is inside a pair of (" ") following
+// an 'echo'. You can do what you like in here, but you must ensure there's
+// still a pair of "s and, if there was one to start with, a pair of ()s. Also, 
+// you cannot use " in your HTML any more. Use ' instead. It's not-quite-valid 
+// but far preferable to using \" instead. Using bare " irritates the crap out
+// of the PHP interpreter.
+
+
+$email_to = "address@domain.com";
+$email_subject = "Your email subject line";
 
 $me = $_SERVER['PHP_SELF']; 
+
+// Call the top() function to output the top fraction of HTML. See below for the actual HTML:
+top();
 
 if($_POST['submit']!='Submit'){
 	echo ("
@@ -58,10 +74,6 @@ if($_POST['submit']!='Submit'){
 		</form>
 	");
 }else{
-	// EDIT THE 2 LINES BELOW AS REQUIRED
-	$email_to = "you@yourdomain.com";
-	$email_subject = "Your email subject line";
-
 	// Some laziness. I don't like long variable names. Also provides an easy 
 	// way to see just how much of their code I plagiarised:
 	$first_name = $_POST['first_name'];
@@ -187,15 +199,30 @@ if($_POST['submit']!='Submit'){
 				
 	}else{
 	// This bunch of code is only executed if the form is filled in satisfactorally
-	// it's worth bearing in mind that 'satisfactorally' means 'has some data in it'.
+	// it is worth bearing in mind that "satisfactorally" means "has some data in it".
 
 	
 		// create email headers
 		$headers = 'From: '.$email_from."\r\n".
-		'Reply-To: '.$email_from."\r\n" .
+		'Reply-To: '.$email_from."\r\n".
 		'X-Mailer: PHP/' . phpversion();
-		// @mail($email_to, $email_subject, $comments, $headers);  
-		echo" (@mail($email_to,$email_subject, $comments, $headers) ";
+		
+		
+
+		// create email body:
+		$body = "Name: $first_name $last_name\n";
+		$body.= "Email: $email\n";
+		$body.= "Phone: $telephone\n";
+		$body.= "\n\n";
+
+		if (!empty($comments)){
+			$body.= "Sender also left some comments:\n\n";
+			$body.= $comments;
+		}
+
+	//	mail($email_to, $email_subject, $body, $headers);  
+
+		echo ("Success!\n\nI want to run the command	'@mail($email_to, $email_subject, $body, $headers)', but you need to comment out line 285 (which is me) and uncomment line 284 (beginning @mail) in order to do so");
 
 		echo ("
 	
@@ -209,81 +236,93 @@ if($_POST['submit']!='Submit'){
 
 bottom();
 
+/* Here Be Big Chunks Of HTML */
+
+// There are two functions here. top() and bottom(). Each just serves to echo the HTML before
+// and after the form respectively. Do what you like inside of them, with the exception of 
+// using double quote marks ("), you should use singles (') instead, else you'll irritate the
+// PHP interpreter. 
+
+
 function top() {
 	echo ("
-	CTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>
-	<HTML><HEAD><TITLE>Racer's Guild of Cannock Chase - Homepage</TITLE>
-	<META http-equiv=Content-Type content='text/html; charset=unicode'><!--  Created with NOTEPAD!  -->
-	<META content='MSHTML 6.00.6000.16945' name=GENERATOR>
-	<META 
-	content='Homepage for downhill mountain biking at Cannock Chase, including trail building and Freelap practice days.' 
-	name=description>
-	<META content='downhill, mountain biking, cannock chase, stile cop, freelap' 
-	name=keywords>
-	<STYLE type=text/css>
-	  <!--
-	    /* Don't underline links */
-	    a:link {text-decoration: none;}
-	    a:visited {text-decoration: none;}
-	    /* Custom Scrollbar Colors */
-	    body{
-	      scrollbar-arrow-color: #333333;
-	      scrollbar-3dlight-color: #e6d6a5;
-	      scrollbar-highlight-color: #333333;
-	      scrollbar-face-color: #e6d6a5;
-	      scrollbar-shadow-color: #333333;
-	      scrollbar-darkshadow-color: #e6d6a5;
-	      scrollbar-track-color: #e6d6a5;
-	    }
-	  -->
-	  </STYLE>
-	</HEAD>
-	<BODY text=#333333 vLink=#800080 aLink=#ff0000 link=#0000ff bgColor=#000000>
-	<DIV>
-	<TABLE borderColor=#000000 cellSpacing=0 cellPadding=0 width=799 align=center 
-	bgColor=#000000 border=0>
-	  <TBODY>
-	  <TR vAlign=top>
-	
-	    <TD width=799 colSpan=5 height=150><MAP name=banner><AREA shape=RECT 
-	        alt=Home coords=40,30,80,50 href='home.html'><AREA shape=RECT 
-	        alt='What's this all about and how do I join?' coords=440,30,485,50 
-	        href='about.html'><AREA shape=RECT alt='2010 Race Calendar' 
-	        coords=490,30,550,50 href='2010_calendar.html'><AREA shape=RECT 
-	        alt='Description of downhill trails' coords=555,30,600,50 
-	        href='trails.html'><AREA shape=RECT alt='Timed results and stats' 
-	        coords=605,30,650,50 href='results.html'><AREA shape=RECT 
-	        alt='Member profiles' coords=665,30,725,50 href='members.html'><AREA 
-	        shape=RECT alt='To Bikeadventures downhill forum' coords=730,30,775,50 
-	        href='http://www.bikeadventuresuk.com/forum/viewforum.php?f=12'></MAP><IMG 
-	      style='Z-INDEX: 100; POSITION: absolute' height=150 alt='' 
-	      src='Images/RG Parchment 799x150 2.gif' width=799 align=top useMap=#banner 
-	      border=0> </TD></TR>
-	  <TR vAlign=top>
-	    <TD width=60 height=1000><IMG style='Z-INDEX: 100; POSITION: absolute' 
-	      height=1000 alt='' src='Images/L_Border.jpg' width=60 align=top border=0> 
-	    </TD>
-	    <TD align=middle width=680 bgColor=#e6d6a5 height=818><FONT 
-	      size=2><BR>Joining the guild is free - all you need to do is to have attended at 
-	      least one of our timed practices.<BR>Why become a member?<BR>
-	Recieve regular newsletters from Racersguild<br>
-	Get free or discounted membership to British Cycling<BR>Get preferential rates from our friends at 
-	      Descent-Gear.com (see details below).<BR>And of course you're a part of a 
-	      1very cool collective of Midlands riders!</FONT><BR><FONT size=2><BR>Have questions about joining? Contact: </FONT><A 
-	      href='mailto:join@racersguild.co.uk'><FONT 
-	      size=2>Join@racersguild.co.uk</FONT></A>
-	
-	<br><strong>2008-2009 members should also complete the form to ensure they are kept up to date!</strong><br>
-	<FONT size=2> </FONT><BR><BR><FONT 
-	      style='BACKGROUND-COLOR: #e6d6a5'><IMG height=37 alt='' 
-	      src='Images/Guild Members Banner.jpg' width=315 align=center 
-	      border=0><BR></FONT><FONT style='BACKGROUND-COLOR: #e6d6a5'></FONT><FONT 
-	      size=1>Please fill in the form below to join RG<BR>
+
+DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>
+<HTML><HEAD><TITLE>Racer's Guild of Cannock Chase - Homepage</TITLE>
+<META http-equiv=Content-Type content='text/html; charset=unicode'><!--  Created with NOTEPAD!  -->
+<META content='MSHTML 6.00.6000.16945' name=GENERATOR>
+<META 
+content='Homepage for downhill mountain biking at Cannock Chase, including trail building and Freelap practice days.' 
+name=description>
+<META content='downhill, mountain biking, cannock chase, stile cop, freelap' 
+name=keywords>
+<STYLE type=text/css>
+  <!--
+    /* Don't underline links */
+    a:link {text-decoration: none;}
+    a:visited {text-decoration: none;}
+    /* Custom Scrollbar Colors */
+    body{
+      scrollbar-arrow-color: #333333;
+      scrollbar-3dlight-color: #e6d6a5;
+      scrollbar-highlight-color: #333333;
+      scrollbar-face-color: #e6d6a5;
+      scrollbar-shadow-color: #333333;
+      scrollbar-darkshadow-color: #e6d6a5;
+      scrollbar-track-color: #e6d6a5;
+    }
+  -->
+  </STYLE>
+</HEAD>
+<BODY text=#333333 vLink=#800080 aLink=#ff0000 link=#0000ff bgColor=#000000>
+<DIV>
+<TABLE borderColor=#000000 cellSpacing=0 cellPadding=0 width=799 align=center 
+bgColor=#000000 border=0>
+  <TBODY>
+  <TR vAlign=top>
+
+    <TD width=799 colSpan=5 height=150><MAP name=banner><AREA shape=RECT 
+        alt=Home coords=40,30,80,50 href='home.html'><AREA shape=RECT 
+        alt='What's this all about and how do I join?' coords=440,30,485,50 
+        href='about.html'><AREA shape=RECT alt='2010 Race Calendar' 
+        coords=490,30,550,50 href='2010_calendar.html'><AREA shape=RECT 
+        alt='Description of downhill trails' coords=555,30,600,50 
+        href='trails.html'><AREA shape=RECT alt='Timed results and stats' 
+        coords=605,30,650,50 href='results.html'><AREA shape=RECT 
+        alt='Member profiles' coords=665,30,725,50 href='members.html'><AREA 
+        shape=RECT alt='To Bikeadventures downhill forum' coords=730,30,775,50 
+        href='http://www.bikeadventuresuk.com/forum/viewforum.php?f=12'></MAP><IMG 
+      style='Z-INDEX: 100; POSITION: absolute' height=150 alt='' 
+      src='Images/RG Parchment 799x150 2.gif' width=799 align=top useMap=#banner 
+      border=0> </TD></TR>
+  <TR vAlign=top>
+    <TD width=60 height=1000><IMG style='Z-INDEX: 100; POSITION: absolute' 
+      height=1000 alt='' src='Images/L_Border.jpg' width=60 align=top border=0> 
+    </TD>
+    <TD align=middle width=680 bgColor=#e6d6a5 height=818><FONT 
+      size=2><BR>Joining the guild is free - all you need to do is to have attended at 
+      least one of our timed practices.<BR>Why become a member?<BR>
+Recieve regular newsletters from Racersguild<br>
+Get free or discounted membership to British Cycling<BR>Get preferential rates from our friends at 
+      Descent-Gear.com (see details below).<BR>And of course you're a part of a 
+      1very cool collective of Midlands riders!</FONT><BR><FONT size=2><BR>Have questions about joining? Contact: </FONT><A 
+      href='mailto:join@racersguild.co.uk'><FONT 
+      size=2>Join@racersguild.co.uk</FONT></A>
+
+<br><strong>2008-2009 members should also complete the form to ensure they are kept up to date!</strong><br>
+<FONT size=2> </FONT><BR><BR><FONT 
+      style='BACKGROUND-COLOR: #e6d6a5'><IMG height=37 alt='' 
+      src='Images/Guild Members Banner.jpg' width=315 align=center 
+      border=0><BR></FONT><FONT style='BACKGROUND-COLOR: #e6d6a5'></FONT><FONT 
+      size=1>Please fill in the form below to join RG<BR>
 	");
 }
-function bottom() {
-	echo("
 
+// Here's the HTML for the bottom:
+
+function bottom() {
+
+	echo ("
 <FONT style='BACKGROUND-COLOR: #e6d6a5'></FONT><FONT 
       size=1>Your information is safe with us. We promise not to sell it,<BR>
 misuse or abuse it, we will NEVER send you spam<br>
@@ -329,7 +368,8 @@ misuse or abuse it, we will NEVER send you spam<br>
       height=1000 alt='' src='Images/R_Border.jpg' width=59 align=top border=0> 
     </TD></TR></TBODY></TABLE></DIV></MAP></BODY></HTML>
 
-");
+	");
+
 }
 
 ?>
