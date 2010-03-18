@@ -59,7 +59,7 @@ if($_POST['submit']!='Submit'){
 				</tr>
 				<tr>
 				 <td valign='top'>
-				  <label for='cat'>Category *</label>
+				  <label for='cat'>Category (u16, 16-40, 40+) *</label>
 				 </td>	
 		 		 <td valign='top'>
 				  <input  type='text' name='cat' maxlength='30' size='30'>
@@ -103,6 +103,7 @@ if($_POST['submit']!='Submit'){
 		// chunk (beginning 'empty ($_POST['last_name']' ) up to the next thing that 
 		// lines up with here (i.e. one tab in, or in line with if(empty)) is executed 
 		// when the form is submitted incorrectly filled in. 
+
 
 		if(empty($_POST['first_name']) ||
 			empty($_POST['last_name']) ||
@@ -176,11 +177,11 @@ if($_POST['submit']!='Submit'){
 		");
 		if (empty($cat)){
 			echo ("
-					  <label for='cat'><strong>Category</strong><label>
+					  <label for='cat'><strong>Category (u16, 16-40, 40+) *</strong><label>
 			");
 		}else{
 			echo ("
-					  <label for='cat'>Category *</label>
+					  <label for='cat'>Category (u16, 16-40, 40+) *</label>
 			");
 		}
 		echo ("
