@@ -22,6 +22,14 @@ top();
 
 if($_POST['submit']!='Submit'){
 	echo ("
+
+			<FONT size=2> </FONT>
+			<BR>
+			<BR>
+			<FONT style='BACKGROUND-COLOR: #e6d6a5'><IMG height=37 alt='' src='Images/Guild Members Banner.jpg' width=315 align=center border=0><BR></FONT>
+			<FONT style='BACKGROUND-COLOR: #e6d6a5'></FONT>
+			<FONT size=1>Please fill in the form below to join RG<BR>
+
 		<form name='contactform' method='post' action='$me'>
 		 	<table width='450px'>
 				</tr>
@@ -51,7 +59,7 @@ if($_POST['submit']!='Submit'){
 				</tr>
 				<tr>
 				 <td valign='top'>
-				  <label for='cat'>Category</label>
+				  <label for='cat'>Category *</label>
 				 </td>	
 		 		 <td valign='top'>
 				  <input  type='text' name='cat' maxlength='30' size='30'>
@@ -59,10 +67,11 @@ if($_POST['submit']!='Submit'){
 				</tr>
 				<tr>
 				 <td valign='top'>
-				  <label for='comments'>Last RG Event Attended *</label>
+				  <label for='last_event'>Last RG Event Attended *</label>
 				 </td>
 				 <td valign='top'>
-				  <textarea  name='last_event' maxlength='1000' cols='25' rows='6'></textarea>
+				  <input type='text' name='last_event' maxlength='80' size='30' />
+			<!--	  <textarea  name='last' maxlength='1000' cols='25' rows='6'></textarea> -->
 				 </td>	
 				</tr>
 				<tr>
@@ -79,42 +88,44 @@ if($_POST['submit']!='Submit'){
 	$first_name = $_POST['first_name'];
 	$last_name = $_POST['last_name'];
 	$email = $_POST['email'];
-	$telephone = $_POST['telephone'];
-	$comments = $_POST['comments'];
+	$cat = $_POST['cat'];
+	$last_event = $_POST['last_event'];
 
-	// This chunk is checking that each submission is non-zero. This is (currently) 
-	// all the validation we bother to do.
-	// If any are non-zero, it re-presents the form for filling in again. 
-	// This gets called again on next form submission, so with a really stupid user
-	// the process can go on forever. This is considered a feature.
+	echo $_POST['last'];
 
-	// Everything that is indented as far as the line below the one below this 
-	// chunk (beginning 'empty ($_POST['last_name']' ) up to the next thing that 
-	// lines up with here (i.e. one tab in, or in line with if(empty)) is executed 
-	// when the form is submitted incorrectly filled in. 
+		// This chunk is checking that each submission is non-zero. This is (currently) 
+		// all the validation we bother to do.
+		// If any are non-zero, it re-presents the form for filling in again. 
+		// This gets called again on next form submission, so with a really stupid user
+		// the process can go on forever. This is considered a feature.
 
-	if(empty($_POST['first_name']) ||
-		empty($_POST['last_name']) ||
-		empty($_POST['email']) ||
-		empty($_POST['cat']) ||
-		empty($_POST['last_event'])) { 
+		// Everything that is indented as far as the line below the one below this 
+		// chunk (beginning 'empty ($_POST['last_name']' ) up to the next thing that 
+		// lines up with here (i.e. one tab in, or in line with if(empty)) is executed 
+		// when the form is submitted incorrectly filled in. 
 
-		echo ("	
+		if(empty($_POST['first_name']) ||
+			empty($_POST['last_name']) ||
+			empty($_POST['email']) ||
+			empty($_POST['cat']) ||
+			empty($_POST['last_event'])) { 
 
-			<h2>Oop. There appears to have been a problem. Please check you've filled out everything marked with an asterisk (*) below.</h2>
-
-			<form name='contactform' method='post' action='$me'>
-			 	<table width='450px'>
-					</tr>
-					<tr>
-					 <td valign='top'>
-		");
-		if (empty($first_name)){
 			echo ("	
-					<label for='first_name'><strong>First Name *</strong></label>
+
+				<h2>Oop. There appears to have been a problem. Please check you've filled out everything marked with an asterisk (*) below.</h2>
+
+				<form name='contactform' method='post' action='$me'>
+					<table width='450px'>
+						</tr>
+						<tr>
+						 <td valign='top'>
 			");
-		}else{
-			echo ("
+			if (empty($first_name)){
+				echo ("	
+						<label for='first_name'><strong>First Name *</strong></label>
+				");
+			}else{
+				echo ("
 					<label for='first_name'>First Name *</label>
 			");
 		}
@@ -169,13 +180,13 @@ if($_POST['submit']!='Submit'){
 			");
 		}else{
 			echo ("
-					  <label for='cat'>Category</label>
+					  <label for='cat'>Category *</label>
 			");
 		}
 		echo ("
 					 </td>	
 			 		 <td valign='top'>
-					  <input  type='text' name='cat' maxlength='30' size='30'>
+					  <input  type='text' name='cat' maxlength='30' size='30' value='$cat'>
 					 </td>	
 					</tr>
 					<tr>
@@ -193,7 +204,8 @@ if($_POST['submit']!='Submit'){
 		echo("
 					 </td>
 					 <td valign='top'>
-					  <textarea  name='comments' maxlength='1000' cols='25' rows='6'>$last_event</textarea>
+				<!--	  <textarea  name='last_event' maxlength='1000' cols='25' rows='6'>$last_event</textarea> -->
+					  <input type='text' name='last_event' maxlength='30' size='30' value='$last_event' />
 					 </td>	
 					</tr>
 					<tr>
@@ -223,12 +235,11 @@ if($_POST['submit']!='Submit'){
 		$body = "Name:\t$first_name $last_name\n";
 		$body.= "Email:\t$email\n";
 		$body.= "Category:\t$cat\n";
-		$body.= "Last event:\t$last_event;
+		$body.= "Last event:\t$last_event";
 		$body.= "\n\n";
 
 	//	mail($email_to, $email_subject, $body, $headers);  
-
-		echo ("Success!\n\nI want to run the command	'@mail($email_to, $email_subject, $body, $headers)', but you need to comment out line 285 (which is me) and uncomment line 284 (beginning @mail) in order to do so");
+		echo ("<h3>Success!</h3><br /><br />I want to run<br /><tt>mail($email_to, $email_subject, $body, $headers)'</tt><br /> but you need to comment out line 242(which is me) and uncomment line 241 (beginning <tt>mail</tt>) in order to do so<br /><br />");
 
 		echo ("
 	
@@ -252,8 +263,7 @@ bottom();
 
 function top() {
 	echo ("
-
-DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>
+<DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>
 <HTML><HEAD><TITLE>Racer's Guild of Cannock Chase - Homepage</TITLE>
 <META http-equiv=Content-Type content='text/html; charset=unicode'><!--  Created with NOTEPAD!  -->
 <META content='MSHTML 6.00.6000.16945' name=GENERATOR>
@@ -309,18 +319,13 @@ bgColor=#000000 border=0>
       size=2><BR>Joining the guild is free - all you need to do is to have attended at 
       least one of our timed practices.<BR>Why become a member?<BR>
 Recieve regular newsletters from Racersguild<br>
-Get free or discounted membership to British Cycling<BR>Get preferential rates from our friends at 
+get free or discounted membership to British Cycling<BR>get preferential rates from our friends at 
       Descent-Gear.com (see details below).<BR>And of course you're a part of a 
       1very cool collective of Midlands riders!</FONT><BR><FONT size=2><BR>Have questions about joining? Contact: </FONT><A 
       href='mailto:join@racersguild.co.uk'><FONT 
       size=2>Join@racersguild.co.uk</FONT></A>
 
 <br><strong>2008-2009 members should also complete the form to ensure they are kept up to date!</strong><br>
-<FONT size=2> </FONT><BR><BR><FONT 
-      style='BACKGROUND-COLOR: #e6d6a5'><IMG height=37 alt='' 
-      src='Images/Guild Members Banner.jpg' width=315 align=center 
-      border=0><BR></FONT><FONT style='BACKGROUND-COLOR: #e6d6a5'></FONT><FONT 
-      size=1>Please fill in the form below to join RG<BR>
 	");
 }
 
