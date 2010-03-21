@@ -76,7 +76,8 @@ sub test(){
 sub quiz(){
 	my $num = shift;
 	my ($count, $score) = (0,0);
-	for ($count = 0; $count <= $num; $count++){
+	my $time = time();
+	for ($count = 1; $count <= $num; $count++){
 		print "$count)\t";	
 		my $q = &ask_question();
 
@@ -87,8 +88,33 @@ sub quiz(){
 			say "\tNope:";
 		}
 	}
+	$count--;
+	$time = time() - $time;
+	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
+	$pc = ( $score / $count  ) * 100;
+	say "Pointless accuracy:".$pc."%";
+	&simple_progress($count, $pc, $time);
+}
 
-	say "\n\nTried $count questions, got $score correct";
+sub simple_progress(){
+	my $count = shift;
+	my $pc = shift;
+	my $time = shift;
+	
+	my $record_file = "./.maths.data";
+	unless (-e $record_file){
+		qx(touch $record_file);
+	}
+	unless (-w $record_file){
+		warn("Could not write progress data. \$record_file appears to not be readale at $record_file");
+	}
+	my ($year, $month, $day, $hour, $min, $sec) = (localtime())[5,4,3,2,1,0];
+	my $year += 1900;
+	my $now = "$year-$month-$day+$hour:$min:$sec";
+	open (F,">>$record_file")
+	 or warn("Could not open $record_file for appending, but it passed the writable test. If you see this error, something's fucked");
+	say  F "$now\t$count\t$pc\t$time";
+	close F;
 }
 
 ## This sub picks a question at random, asks it, and prompts
@@ -102,8 +128,8 @@ sub ask_question() {
 	}else{
 		$q = $_[0];
 	}
-	my ($question, $answer) = &{$q}();
-#	my ($question, $answer) = &differentiation;
+#	my ($question, $answer) = &{$q}();
+	my ($question, $answer) = &differentiation;
 	say $question;
 	say "($answer)";
 	my $guess = <STDIN>;
@@ -137,13 +163,12 @@ sub positive_rand() {
 ## positive_rand()'s default.
 sub nonzero_rand() {
 	my $range = shift;
-	## you can fiddle with the 
-	my $sign = int(rand(1));
+	my $sign = int(rand(10));
 	my $int = &positive_rand($range);
-	if ($sign == 0){
+	if ($sign < 5){
 		return (0-$int);
 	}else{
-		return int;
+		return $int;
 	}
 }
 
