@@ -14,8 +14,9 @@ print "Content-type: text/html\n\n\n";
 
 
 ## Get some data!
-my %stuff = &el_reg();
-my %stuff = (&slashdot(), %stuff);
+#my %stuff = (&el_reg(), &slashdot(), &identi() );
+
+my %stuff = (&slashdot(), &atom());
 
 ## Let's make some HTML!
 &start_html();
@@ -43,17 +44,24 @@ for my $key (reverse sort (%stuff)){
 # where date is a unix timestamp				#
 
 
-sub el_reg(){
-	my %return;
-	my $url="http://forums.theregister.co.uk/feed/user/40790";
-	my $feed = XML::FeedPP->new( $url );
-	
-	foreach my $item ( $feed->get_item() ) {
-		my $d = DateTime::Format::Atom->new();
-		my $dt = $d->parse_datetime( $item->pubDate );
-		my $time = $dt->epoch;
 
-		$return{ $time } = [$item->link, $item->title()];
+sub atom(){
+
+	#does both The Register and Identi.ca, since they appear to use standard atom feeds.
+
+	my @urls = ("http://identi.ca/api/statuses/user_timeline/99267.atom", "http://forums.theregister.co.uk/feed/user/40790");
+	my %return;
+
+	foreach my $url (@urls){
+		my $feed = XML::FeedPP->new( $url );
+
+		foreach my $item ( $feed->get_item() ) {
+			my $d = DateTime::Format::Atom->new();
+			my $dt = $d->parse_datetime( $item->pubDate );
+			my $time = $dt->epoch;
+	
+			$return{ $time } = [$item->link, $item->title()];
+		}
 	}
 	return %return;
 }
@@ -84,13 +92,20 @@ sub slashdot(){
 			hour   => $h,
 			minute => $m,
 			second => $s,
-                       time_zone => "+$tz",
+			time_zone => "+$tz",
                  );
 		$time = $dt->epoch;
 		my $link = $item->link;
 		$return{$time} = [$link, $content]
 	}
 	return %return
+}
+
+sub identi(){
+	
+
+
+
 }
 
 # Boring subs 							#
@@ -105,7 +120,8 @@ sub make_tr(){
 	my ($date, $arrayref) = @_;
 	my ($link, $content) = @$arrayref[0,1];
 
-	$date = localtime($date);
+#	$date = localtime($date);
+	$date = &friendly_date($date);
 
 	print "\t\t<tr><td>";
 	print get_icon($link);
@@ -121,21 +137,53 @@ sub get_icon{
 	my $url;
 	given (@_[0]){
 		when(/slashdot/){
-			$url = "http://www.jovianclouds.com/images/slashdot_normal.jpg";
+			$url = "http://www.slashdot.org/favicon.ico";
 		}
 		when(/theregister/){
-			$url = "http://www.theregister.co.uk/Design/graphics/icons/vulture_red.png";
+			$url = "http://www.theregister.co.uk/favicon.ico";
+		}
+		when(/identi/){
+			$url = "http://identi.ca/favicon.ico";
 		}
 	}
 	return "<img src='$url'>";
 }
 
 
+sub friendly_date() {
+	my $date = shift;
+	my $time;
+
+	my $interval = time() - $date;
+
+	given($interval){
+		when ($interval < 600){
+			int $interval;
+			return "$interval seconds ago";
+		}
+		when ($interval < 3600){
+			$time = $interval/60;
+			return "$time minutes ago";
+		}
+		when ($interval < 86400){
+			$time = $interval/60;
+			return "$time minutes ago";
+		}
+		when ($interval < 604800){
+			$time = int $interval/3600;
+			return "$time hours ago";
+		}
+	}
+	return "ages ago";
+
+}
+
+
 sub start_html() {
-	say "<html><body><table>";
+	say "<html><head><link rel='stylesheet' type='text/css' href='./styles.css'/></head><body>Here's a newish website idea. It's going to list my most recent 'contributions' to the internet..<div class='content'><table class='main'>";
 }
 
 sub end_html() {
-	say "</table>";
+	say "</table></div>";
 	say "<a href='http://github.com/BigRedS/play/raw/master/website/index.pl'>sauce</a>, <a href='http://github.com/BigRedS/play/blob/master/website/index.pl'>Git</a></body></html>";
 }
