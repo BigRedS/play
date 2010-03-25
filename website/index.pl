@@ -73,9 +73,9 @@ sub make_tr(){
 	my ($date, $arrayref) = @_;
 	my ($link, $content) = @$arrayref[0,1];
 
-	print "<tr><td>";
+	print "\t\t<tr><td>";
 	print get_icon($link);
-	print "</td><td><a href='$link'>$content</a></td></tr>";
+	say "<td><td><a href='$link'>$content</a></td></tr>";
 	
 	
 #	a href='$link'>$content</a><br />";
@@ -101,5 +101,6 @@ sub start_html() {
 	say "<html><body><table>";
 }
 sub end_html() {
-	say "</table></body></html>";
+	say "</table>";
+	say "<a href='http://github.com/BigRedS/play/raw/master/website/index.pl'>sauce</a>, <a href='http://github.com/BigRedS/play/blob/master/website/index.pl'>Git</a></body></html>";
 }
