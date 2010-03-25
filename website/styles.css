@@ -1,0 +1,34 @@
+a:visited
+        {
+         background-color:transparent;
+         color: #000;
+         text-decoration: none;
+        }
+
+a:link
+        {
+         color:#000;
+         text-decoration: none;
+        }
+
+a:hover
+        {
+         color:#000;
+         text-decoration:underline;
+        }
+
+
+
+body {
+  font-size: 75%;
+  font-family: 'Lucida Grande', Verdana, Sans-Serif;
+  color: #000;
+  background-color: #c9c9c9;
+}
+
+.content{
+	width:70%;
+	margin-left: auto;
+	margin-right: auto;
+	}
+
