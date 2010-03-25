@@ -5,44 +5,48 @@ use 5.010;
 
 use XML::RAI;
 use XML::RSSLite;
+use XML::FeedPP;
 use LWP::Simple;
 
-# subs return %return = { link => 'description'}
-#  get stuck in %data = { date => \%return }
-# then sort by date etc.
-
-&el_reg();
-#my %stuff = &slashdot;
-
-#while (my ($key, $value) = each(%stuff)){
-#	say $key;
-#}
-
-print "\n";
+print "Content-type: text/html\n\n\n";
 
 
-sub el_reg(){
-	my $url="http://forums.theregister.co.uk/feed/user/40790";
-	my $content = get($url);
-	
-	my %result;
+## Get some data!
+my %stuff = &el_reg();
+my %stuff = (&slashdot(), %stuff);
 
-parseRSS(\%result, \$content);
+&start_html();
 
- # print "=== Channel ===\n",
-  #      "Title: $result{'title'}\n",
-  #      "Desc:  $result{'description'}\n",
-  #      "Link:  $result{'link'}\n\n";
 
-#  foreach my $item (@{$result{'item'}}) {
-#  print "  --- Item ---\n",
-#        "  Title: $item->{'title'}\n",
-#        "  Desc:  $item->{'description'}\n",
-#        "  Link:  $item->{'link'}\n\n";
-#  }
+for my $key (keys (%stuff)){
+	my $date = $key;
+	my @array = %stuff->{$key};
+
+	&make_tr($date, @array);
 }
 
 
+&end_html();
+
+
+## this is the end of the page.
+
+
+# Subs to grab content and stick it in a hash. Hashes are of	#
+# the form 							#
+#	$return{date} = 'url text'				#
+# where urls are presumed to not have spaces in, and 'text' is 	#
+# the text to display						#
+
+sub el_reg(){
+	my %return;
+	my $url="http://forums.theregister.co.uk/feed/user/40790";
+	my $feed = XML::FeedPP->new( $url );
+	foreach my $item ( $feed->get_item() ) {
+		$return{ $item->pubDate() } = [$item->link, $item->title()];
+	}
+	return %return;
+}
 
 sub slashdot(){
 	my %return;
@@ -55,10 +59,47 @@ sub slashdot(){
 
 		my $link = $item->link;
 
-		$return{ $link } = $content;
+	$return{$item->issued} = [$link, $content]
+
+#	$return{ $link } = $content;
 	}
 
 	return %return
 }
 
+# Boring subs 							#
 
+sub make_tr(){
+	my ($date, $arrayref) = @_;
+	my ($link, $content) = @$arrayref[0,1];
+
+	print "<tr><td>";
+	print get_icon($link);
+	print "</td><td><a href='$link'>$content</a></td></tr>";
+	
+	
+#	a href='$link'>$content</a><br />";
+
+}
+
+sub get_icon{
+	my $url;
+	given (@_[0]){
+		when(/slashdot/){
+			$url = "http://www.jovianclouds.com/images/slashdot_normal.jpg";
+		}
+		when(/theregister/){
+			$url = "http://www.theregister.co.uk/Design/graphics/icons/vulture_red.png";
+		}
+	}
+	return "<img src='$url'>";
+
+}
+
+
+sub start_html() {
+	say "<html><body><table>";
+}
+sub end_html() {
+	say "</table></body></html>";
+}
