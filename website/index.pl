@@ -9,9 +9,8 @@ use XML::FeedPP;
 use LWP::Simple;
 use DateTime;
 use DateTime::Format::Atom;
-#use DateTime::Format::RSS;
 
-#print "Content-type: text/html\n\n\n";
+print "Content-type: text/html\n\n\n";
 
 
 ## Get some data!
@@ -19,20 +18,19 @@ my %stuff = &el_reg();
 my %stuff = (&slashdot(), %stuff);
 
 ## Let's make some HTML!
-
 &start_html();
 
 for my $key (reverse sort (%stuff)){
 
-	if ($stuff{$key}){
-		my $date = $key;
+	if ($stuff{$key}){			# This shouldn't be necessary.
+		my $date = $key;		# Fix it.
 		my @array = %stuff->{$key};
-
+						# Fix it now.
 		&make_tr($date, @array);
 	}
 }
 
-# Let's stop.
+## Let's stop.
 &end_html();
 
 
@@ -70,12 +68,15 @@ sub slashdot(){
 		$content.="...";  
 
 
-		my $time = $item->issued;
-		my ($date, $time) = split (/T/, $time);
-		my ($time, $tz) = split (/\+/, $time);
-		my ($year,$month,$day) = split(/-/, $date);
+		## This was supposed to be done by TimeDate::Format::RSS
+		## but I couldn't persuade CPAN to tell me why it	
+		## couldn't install it.				
+
+		my $time = $item->issued;			
+		my ($date, $time) = split (/T/, $time);		
+		my ($time, $tz) = split (/\+/, $time);		
+		my ($year,$month,$day) = split(/-/, $date);	
 		my ($h,$m,$s) = split(/:/, $time);
-		
 		my $dt = DateTime->new( 
 			year   => $year,
 			month  => $month,
@@ -85,28 +86,20 @@ sub slashdot(){
 			second => $s,
                        time_zone => "+$tz",
                  );
-
 		$time = $dt->epoch;
-		
-
-#		my $d = DateTime::Format::W3CDTF->new();
-#		my $dt = $d->parse_datetime( $item->issued );
-#		my $time = $dt->epoch;
 		my $link = $item->link;
-
-	$return{$time} = [$link, $content]
-
-#	$return{ $link } = $content;
+		$return{$time} = [$link, $content]
 	}
-
 	return %return
 }
 
 # Boring subs 							#
 
-## Accepts as an argument the two items spouted by the above get-data-subs 
-## (a string which is the timestamp and a two-element array containing a
-## URL and some text to use as the link.
+								
+# Accepts as an argument the two items spouted by the above 	#
+# get-data-subs (a string which is the timestamp and a 		#
+# two-element array containing a URL and some text to use as 	#
+# the link.							#
 
 sub make_tr(){
 	my ($date, $arrayref) = @_;
@@ -117,12 +110,6 @@ sub make_tr(){
 	print "\t\t<tr><td>";
 	print get_icon($link);
 	say "<td><td><a href='$link'>$content</a></td><<td>$date</td></td>";
-#print localtime($date);
-#say "</td><tr>";
-	
-	
-#	a href='$link'>$content</a><br />";
-
 }
 
 
@@ -141,13 +128,13 @@ sub get_icon{
 		}
 	}
 	return "<img src='$url'>";
-
 }
 
 
 sub start_html() {
 	say "<html><body><table>";
 }
+
 sub end_html() {
 	say "</table>";
 	say "<a href='http://github.com/BigRedS/play/raw/master/website/index.pl'>sauce</a>, <a href='http://github.com/BigRedS/play/blob/master/website/index.pl'>Git</a></body></html>";
