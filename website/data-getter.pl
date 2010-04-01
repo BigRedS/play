@@ -23,10 +23,11 @@ for my $key (reverse sort (%stuff)){
 		my $url = ${$arrayref}[0];
 		my $content = ${$arrayref}[1];
 
-	#	$url =~ s/&amp;/&/;
-	#	$url =~ s/&/&amp;/;
 		$url =~ s/&{1}(amp;){0}/&amp;/g;
 		my $content = substr($content, 0, 250);
+
+		my $content =~ s/</&lt;/g;
+		my $content =~ s/>/&gt;/g
 
 
 		print FILE "$date\n$url\n$content\n\n";
