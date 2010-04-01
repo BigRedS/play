@@ -1,0 +1,38 @@
+
+
+/
+	Links at the top of the page.
+	list of 'contributions to the internet':
+			periodically (half-hourly?) grab info, spit out index.htm
+			theregister	atom
+				comments
+			slashdot	rss
+				comments
+			identi.ca	atom
+				posts/tweets
+			github		api
+				diffs/commits? group <1hr
+			facebook	api	?
+				Stuff that isn't status updates - posts to other statuse etc.
+			flickr		rss
+				Image uploads, comments
+			irc		parse logs
+				Stuff. Group <1hr
+			mailing lists
+				Fuck Knows.
+	
+			lb, ukmb, lq login?
+	/rants
+		Bunch of rants in markdown or similar format. index parses them and makes them pretty.
+
+	/find
+
+	/wiki
+		usemodwiki. As is, less the ranting.
+
+	/about
+		Aggregation of all the 'about me' pages all over the net. parsing facebook/linkedin/identi.ca/twitter etc.
+
+	/blog/
+		wordpress.
+
