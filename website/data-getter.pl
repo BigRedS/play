@@ -37,7 +37,14 @@ close FILE;
 
 sub atom(){
 
-	my @urls = ("http://identi.ca/api/statuses/user_timeline/99267.atom", "http://forums.theregister.co.uk/feed/user/40790", "http://github.com/BigRedS.atom");
+	my @urls = (
+		"http://identi.ca/api/statuses/user_timeline/99267.atom", 
+		"http://forums.theregister.co.uk/feed/user/40790", 
+		"http://github.com/BigRedS/play/commits/master.atom",
+		"http://github.com/BigRedS/Work/commits/master.atom",
+		"http://github.com/BigRedS/work-web/commits/master.atom",
+		"http://github.com/BigRedS/dotfiles/commits/master.atom"
+	);
 	my %return;
 
 	foreach my $url (@urls){
@@ -47,8 +54,11 @@ sub atom(){
 			my $d = DateTime::Format::Atom->new();
 			my $dt = $d->parse_datetime( $item->pubDate );
 			my $time = $dt->epoch;
-	
-			$return{ $time } = [$item->link, $item->title()];
+#			if ($url =~ /github/){
+#				$return{ $time } = [$item->link, $item->description()];
+#			}else{
+				$return{ $time } = [$item->link, $item->title()];
+#			}
 		}
 	}
 	return %return;
