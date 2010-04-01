@@ -1,29 +1,24 @@
-a:visited
-        {
+a:visited {
          background-color:transparent;
          color: #000;
          text-decoration: none;
-        }
+}
 
-a:link
-        {
-         color:#000;
-         text-decoration: none;
-        }
+a:link {
+	color:#000;
+	text-decoration: none;
+}
 
-a:hover
-        {
+a:hover {
          color:#000;
          text-decoration:underline;
-        }
-
-
+}
 
 body {
-  font-size: 75%;
-  font-family: 'Lucida Grande', Verdana, Sans-Serif;
-  color: #000;
-  background-color: #c9c9c9;
+	font-size: 75%;
+	font-family: Sans-Serif;
+	color: #000;
+	background-color: #c9c9c9;
 }
 
 .content{
@@ -37,10 +32,19 @@ body {
 	margin-left: auto;
 	margin-right: auto;
 }
+.footer{
+	width:80%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+
 p.avi{
 	font-size:40px;
 	color:blue;
 }
+
+// Table and rows:
 table.main{
 }
 .icon{
@@ -49,7 +53,6 @@ table.main{
 .text{
 	font-size: 10px;
 	height: 30px;
-//	padding-top: 30px;
 	vertical-align:middle;
 }
 .date{
@@ -58,3 +61,7 @@ table.main{
 	font-size:7pt;
 }
 
+// Misc:
+img{
+	border: none;
+}

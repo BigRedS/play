@@ -124,7 +124,7 @@ sub make_tr(){
 
 	print "\t\t\t\t<tr><td class='icon'>";
 	print get_icon($link);
-	say "<td><td class='text'><a href='$link'>$content</a></td><td class='date'>$date</td></td>";
+	say "</td><td class='text'><a href='$link'>$content</a></td><td class='date'>$date</td></tr>";
 }
 
 
@@ -156,7 +156,7 @@ sub get_icon{
 			$link = "http://github.com";
 		}
 	}
-	return "<a href='$link'><img src='$url' alt='$alt' style='border:0;'></a>";
+	return "<a href='$link'><img src='$url' alt='$alt' style='border:none;' /></a>";
 }
 
 
@@ -192,15 +192,18 @@ sub friendly_date() {
 sub start_html() {
 
 print <<EOF
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<link rel='stylesheet' type='text/css' href='./styles.css'/>
+		<title>Avi</title>
 	</head>
 	<body>
 		<div class='head'>
-			<p class='Avi'>
-				Avi:)
+			<p class='avi'>
+				Avi :)
 			</p>
 			<p>
 				There are several hundred thousand terabytes of data on The Internet. Here are my latest contributions to it:
@@ -215,7 +218,9 @@ EOF
 sub end_html() {
 print <<EOF
 			</table>
-			<a href='http://github.com/BigRedS/play/raw/master/website/index.pl'>sauce</a>, <a href='http://github.com/BigRedS/play/blob/master/website/index.pl'>Git</a>
+		</div>
+		<div class='footer'>
+			<a href='http://github.com/BigRedS/play/tree/master/website/'>Git</a>
 		</div>
 	</body>
 </html>
