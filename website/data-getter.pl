@@ -22,8 +22,10 @@ for my $key (reverse sort (%stuff)){
 		my $arrayref = %stuff->{$key};
 		my $url = ${$arrayref}[0];
 		my $content = ${$arrayref}[1];
-		
-#	my $url =~ s/(&){1}(amp;){0}/&amp;/g;
+
+	#	$url =~ s/&amp;/&/;
+	#	$url =~ s/&/&amp;/;
+		$url =~ s/&{1}(amp;){0}/&amp;/g;
 		my $content = substr($content, 0, 250);
 
 
