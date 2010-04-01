@@ -27,7 +27,7 @@ for my $key (reverse sort (%stuff)){
 		my $content = substr($content, 0, 250);
 
 		my $content =~ s/</&lt;/g;
-		my $content =~ s/>/&gt;/g
+		my $content =~ s/>/&gt;/g;
 
 
 		print FILE "$date\n$url\n$content\n\n";
