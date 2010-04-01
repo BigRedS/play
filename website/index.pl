@@ -31,9 +31,12 @@ sub make_tr(){
 
 	$date = &friendly_date($date);
 
-	print "\t\t\t\t<tr><td class='icon'>";
-	print get_icon($link);
-	say "</td><td class='text'><a href='$link'>$content</a></td><td class='date'>$date</td></tr>";
+	if (length($content) > 1){
+
+		print "\t\t\t\t<tr><td class='icon'>";
+		print get_icon($link);
+		say "</td><td class='text'><a href='$link'>$content</a></td><td class='date'>$date</td></tr>";
+	}
 }
 
 sub get_icon{
