@@ -10,7 +10,7 @@ use LWP::Simple;
 use DateTime;
 use DateTime::Format::Atom;
 
-print "Content-type: text/html\n\n\n";
+#print "Content-type: text/html\n\n\n";
 
 
 ## Get some data!
@@ -49,7 +49,7 @@ sub atom(){
 
 	#does both The Register and Identi.ca, since they appear to use standard atom feeds.
 
-	my @urls = ("http://identi.ca/api/statuses/user_timeline/99267.atom", "http://forums.theregister.co.uk/feed/user/40790");
+	my @urls = ("http://identi.ca/api/statuses/user_timeline/99267.atom", "http://forums.theregister.co.uk/feed/user/40790", "http://github.com/BigRedS.atom");
 	my %return;
 
 	foreach my $url (@urls){
@@ -120,12 +120,11 @@ sub make_tr(){
 	my ($date, $arrayref) = @_;
 	my ($link, $content) = @$arrayref[0,1];
 
-#	$date = localtime($date);
 	$date = &friendly_date($date);
 
-	print "\t\t<tr><td>";
+	print "\t\t\t\t<tr><td class='icon'>";
 	print get_icon($link);
-	say "<td><td><a href='$link'>$content</a></td><<td>$date</td></td>";
+	say "<td><td class='text'><a href='$link'>$content</a></td><td class='date'>$date</td></td>";
 }
 
 
@@ -134,19 +133,30 @@ sub make_tr(){
 ## returns the HTML to display that icon (i.e. <img src=".....">
 
 sub get_icon{
-	my $url;
+	my ($url, $alt, $link);
 	given (@_[0]){
 		when(/slashdot/){
 			$url = "http://www.slashdot.org/favicon.ico";
+			$alt = "Slashdot";
+			$link = "http://www.slashdot.org";
 		}
 		when(/theregister/){
 			$url = "http://www.theregister.co.uk/favicon.ico";
+			$alt = "The Register";
+			$link = "http://theregister.co.uk";
 		}
 		when(/identi/){
 			$url = "http://identi.ca/favicon.ico";
+			$alt = "Identi.ca";
+			$link = "http://identi.ca";
+		}
+		when(/github/){
+			$url = "http://github.com/favicon.ico";
+			$alt = "GitHub";
+			$link = "http://github.com";
 		}
 	}
-	return "<img src='$url'>";
+	return "<a href='$link'><img src='$url' alt='$alt' style='border:0;'></a>";
 }
 
 
@@ -162,15 +172,15 @@ sub friendly_date() {
 			return "$interval seconds ago";
 		}
 		when ($interval < 3600){
-			$time = $interval/60;
+			$time = int $interval/60;
 			return "$time minutes ago";
 		}
 		when ($interval < 86400){
-			$time = $interval/60;
+			$time = int $interval/60;
 			return "$time minutes ago";
 		}
 		when ($interval < 604800){
-			$time = int $interval/3600;
+			$time =int $interval/3600;
 			return "$time hours ago";
 		}
 	}
@@ -180,10 +190,35 @@ sub friendly_date() {
 
 
 sub start_html() {
-	say "<html><head><link rel='stylesheet' type='text/css' href='./styles.css'/></head><body>Here's a newish website idea. It's going to list my most recent 'contributions' to the internet..<div class='content'><table class='main'>";
+
+print <<EOF
+
+<html>
+	<head>
+		<link rel='stylesheet' type='text/css' href='./styles.css'/>
+	</head>
+	<body>
+		<div class='head'>
+			<p class='Avi'>
+				Avi:)
+			</p>
+			<p>
+				There are several hundred thousand terabytes of data on The Internet. Here are my latest contributions to it:
+			</p>
+		</div>
+		<div class='content'>
+			<table class='main'>
+
+EOF
 }
 
 sub end_html() {
-	say "</table></div>";
-	say "<a href='http://github.com/BigRedS/play/raw/master/website/index.pl'>sauce</a>, <a href='http://github.com/BigRedS/play/blob/master/website/index.pl'>Git</a></body></html>";
+print <<EOF
+			</table>
+			<a href='http://github.com/BigRedS/play/raw/master/website/index.pl'>sauce</a>, <a href='http://github.com/BigRedS/play/blob/master/website/index.pl'>Git</a>
+		</div>
+	</body>
+</html>
+EOF
 }
+
