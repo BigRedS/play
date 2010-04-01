@@ -20,9 +20,14 @@ for my $key (reverse sort (%stuff)){
 	if ($stuff{$key}){			# This shouldn't be necessary.
 		my $date = $key;
 		my $arrayref = %stuff->{$key};
-		my @array = @$arrayref;
+		my $url = ${$arrayref}[0];
+		my $content = ${$arrayref}[1];
 		
-		print FILE "$date \n@array[0] \n@array[1]\n\n";
+#	my $url =~ s/(&){1}(amp;){0}/&amp;/g;
+		my $content = substr($content, 0, 250);
+
+
+		print FILE "$date\n$url\n$content\n\n";
 	}
 }
 close FILE;
@@ -52,8 +57,9 @@ sub slashdot(){
 	my $content = get($url);
 	my $rai = XML::RAI->parse_string($content);
 	foreach my $item ( @{$rai->items} ) {
-		$content = substr($item->content, 0, 100);
-		$content.="...";  
+#		$content = substr($item->content, 0, 100);
+#		$content.="...";  
+		$content = $item->content;
 
 
 		## This was supposed to be done by TimeDate::Format::RSS

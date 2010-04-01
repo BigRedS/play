@@ -14,6 +14,7 @@ ts(1)=44
 subroutine maths(a,b,c,d)
 	real a,b,c,d
 	d=a(c/b)
+	! obv. use the right maths here.
 	return
 end
 
