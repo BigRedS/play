@@ -15,6 +15,7 @@
 # $answer an appropriately rounded integer.			#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
 # This is free software. It is licensed under the FreeBSD 	#
 # license which you can find here:				#
 #    http://www.freebsd.org/copyright/freebsd-license.html	#
@@ -28,9 +29,7 @@ use 5.010;
 use Math::Trig;
 
 ## subs implementing questions must be a member of this array:
-#my @questions = ("radians", "test");
-my @questions = ("sequences_and_series");
-
+my @questions = ("radians", "test", "differentiation", "sequences_and_series");
 
 my $record_file = "./.maths.data";
 
@@ -80,37 +79,34 @@ sub differentiation(){
 
 sub radians() {
 	my ($a, $r, $l, $theta, $question, $answer);
-
 	my $questiontype = &nonzero_rand(4);
-
 	given ($questiontype){
 		when (1){
 			# Find area of sector:
 			$r = &positive_rand(100);
 			$theta = &positive_rand(2*pi);
-			$answer = ($r * $r * $theta)/2;
+			$answer = int ($r * $r * $theta)/2;
 			$question = "A circle has radius $r. Find the area of a sector of angle ${theta}rad";
 		}
 		when(2){
 			# Find length of arc:
 			$r = &positive_rand(2*pi);
 			$theta = &positive_rand(2*pi);
-			$answer = $r * $theta;
+			$answer = int $r * $theta;
 			$question = "A circle has radius $r, find the length of the arc of angle ${theta}rad";
 		}
 		when(3){
 			# degs rads:
 			$theta = &positive_rand(2*pi);
-			$answer = $theta * (180/pi);
+			$answer = int $theta * (180/pi);
 			$question = "express ${theta}rad in degrees";
 		}
-		when(4){
+		default{
 			# rads - degs:
 			$theta = &positive_rand(360);
-			$answer = $theta * (pi/180);
+			$answer = int $theta * (pi/180);
 			$question = "express ${theta}degs in radians";
 		}
-
 	}
 	return ($question, $answer);
 }
@@ -134,7 +130,7 @@ sub sequences_and_series() {
 		$terms[$i] = $terms[$i-1] * $r;
 	}
 
-	$question = "Find the ${n}th term of the series\n";
+	$question = "Find the ${n}th term of the series\n\t";
 	foreach (@terms){
 		$question.=" $_ ";
 	}
@@ -152,19 +148,21 @@ sub test(){
 ## Worker Subs ##
 # # # # # # # # #
 
+## Invokes &ask_question to do the actual asking. This just judges the 
+## answer.
 sub quiz(){
 	my $num = shift;
 	my ($count, $score) = (0,0);
 	my $time = time();
 	for ($count = 1; $count <= $num; $count++){
-		print "$count)\t";	
+		print "\n\n$count)\t";	
 		my $q = &ask_question();
 
 		if($q =~ /correct/ ){
 			$score++;
 			say "\tCorrect!";
 		}else{
-			say "\tNope:";
+			say "\tNope. Expected $q";
 		}
 	}
 	$count--;
@@ -178,6 +176,8 @@ sub quiz(){
 	&simple_progress($count, $pc, $time);
 }
 
+
+## Writes progress data to file.
 sub simple_progress(){
 	my $count = shift;
 	my $pc = shift;
@@ -198,9 +198,8 @@ sub simple_progress(){
 	close F;
 }
 
-## This sub picks a question at random, asks it, and prompts
-## for an answer. It returns true if the answer is correct, 
-## false (well, undef) otherwise.
+## Picks a question at random, asks it, and prompts for an answer. 
+## It returns true if the answer is correct, false (well, undef) otherwise.
 sub ask_question() {
 	my $q;
 	if($_[0] !~ /\w+/){
@@ -210,15 +209,14 @@ sub ask_question() {
 		$q = $_[0];
 	}
 	my ($question, $answer) = &{$q}();
-#	my ($question, $aniswer) = &radians;
-	say $question;
-	say "($answer)";
+	print "$question\n\t";
+#	say "($answer)";		# Uncomment this to enable cheating
 	my $guess = <STDIN>;
 	if ($guess == $answer){
-		say "Correct";
+#		say "Correct";
 		return "correct";
 	}else{
-		say "er... expected $answer";
+#		say " nope - expected $answer";
 		return $answer;
 	}
 }
