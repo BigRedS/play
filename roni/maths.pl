@@ -2,6 +2,8 @@
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #		Avi's Wonderful q+a Thingy			#
+#								#
+# By (and (c)) Avi Greenbury, aged 24 3/4			#
 # 								#
 # Each form of question is a sub, and should be named in the 	#
 # array @questions. It should return two values in a list 	#
@@ -13,19 +15,31 @@
 # $answer an appropriately rounded integer.			#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# This is free software. It is licensed under the FreeBSD 	#
+# license which you can find here:				#
+#    http://www.freebsd.org/copyright/freebsd-license.html	#
+
 
 
 #use strict; 	# I know, I know. But &{$subName}() doesn't work
 		# in strict, and I just need to make it work. I 
 		# promise I'll modify it to work in strict. 
 use 5.010;
+use Math::Trig;
 
 ## subs implementing questions must be a member of this array:
-my @questions = ("differentiation", "test");
+#my @questions = ("radians", "test");
+my @questions = ("sequences_and_series");
+
+
+my $record_file = "./.maths.data";
 
 &usage if ($ARGV[0] =~ /\D/);
 
 my $num = $ARGV[0];
+if (!($num > 0)){
+	$num = 3;
+}
 my $subject = undef;
 if ($ARGV[1]){
 	$subject = $ARGV[1];
@@ -64,6 +78,71 @@ sub differentiation(){
 
 }
 
+sub radians() {
+	my ($a, $r, $l, $theta, $question, $answer);
+
+	my $questiontype = &nonzero_rand(4);
+
+	given ($questiontype){
+		when (1){
+			# Find area of sector:
+			$r = &positive_rand(100);
+			$theta = &positive_rand(2*pi);
+			$answer = ($r * $r * $theta)/2;
+			$question = "A circle has radius $r. Find the area of a sector of angle ${theta}rad";
+		}
+		when(2){
+			# Find length of arc:
+			$r = &positive_rand(2*pi);
+			$theta = &positive_rand(2*pi);
+			$answer = $r * $theta;
+			$question = "A circle has radius $r, find the length of the arc of angle ${theta}rad";
+		}
+		when(3){
+			# degs rads:
+			$theta = &positive_rand(2*pi);
+			$answer = $theta * (180/pi);
+			$question = "express ${theta}rad in degrees";
+		}
+		when(4){
+			# rads - degs:
+			$theta = &positive_rand(360);
+			$answer = $theta * (pi/180);
+			$question = "express ${theta}degs in radians";
+		}
+
+	}
+	return ($question, $answer);
+}
+
+sub sequences_and_series() {
+	my ($a, $r, $n, @terms);
+	$a = &positive_rand(100);
+
+	$r = &positive_rand(10);
+	while ($r <= 2 ){
+		$r = &positive_rand(10);
+	}
+
+	$n = &positive_rand(15);
+	while ($n <= 6){
+		$n = &positive_rand(15);
+	}
+
+	@terms[0] = $a;
+	for($i = 1; $i<5; $i++){
+		$terms[$i] = $terms[$i-1] * $r;
+	}
+
+	$question = "Find the ${n}th term of the series\n";
+	foreach (@terms){
+		$question.=" $_ ";
+	}
+	$answer = $a * ($r**($n-1));
+	return ($question, $answer);
+
+}
+
 sub test(){
 	my $question = "Life, the universe and everything?";
 	my $answer = 42;
@@ -93,6 +172,9 @@ sub quiz(){
 	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
 	$pc = ( $score / $count  ) * 100;
 	say "Pointless accuracy:".$pc."%";
+	if ($last_score = &last_score){
+		say "Last time you got ${last_score}%";
+	}
 	&simple_progress($count, $pc, $time);
 }
 
@@ -101,12 +183,11 @@ sub simple_progress(){
 	my $pc = shift;
 	my $time = shift;
 	
-	my $record_file = "./.maths.data";
 	unless (-e $record_file){
 		qx(touch $record_file);
 	}
 	unless (-w $record_file){
-		warn("Could not write progress data. \$record_file appears to not be readale at $record_file");
+		warn("Could not write progress data. \$record_file appears to not be readable at $record_file");
 	}
 	my ($year, $month, $day, $hour, $min, $sec) = (localtime())[5,4,3,2,1,0];
 	my $year += 1900;
@@ -128,8 +209,8 @@ sub ask_question() {
 	}else{
 		$q = $_[0];
 	}
-#	my ($question, $answer) = &{$q}();
-	my ($question, $answer) = &differentiation;
+	my ($question, $answer) = &{$q}();
+#	my ($question, $aniswer) = &radians;
 	say $question;
 	say "($answer)";
 	my $guess = <STDIN>;
@@ -172,6 +253,7 @@ sub nonzero_rand() {
 	}
 }
 
+
 sub usage() {
 
 	say $0;
@@ -185,4 +267,14 @@ sub usage() {
 	}
 	exit 1;
 
+}
+
+sub last_score() {
+	open(F, $record_file)
+	  or return 1;
+	my $last_line;
+	while(<F>){
+		$last_line = $_;
+	}
+	return (split(/\s/, $last_line))[2];
 }
