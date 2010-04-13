@@ -120,7 +120,9 @@ sub sequences_and_series() {
 		$r = &positive_rand(10);
 	}
 
-	$n = &positive_rand(15);
+	$n = 6 + &positive_rand(4);
+
+	$n = &positive_rand(20);
 	while ($n <= 6){
 		$n = &positive_rand(15);
 	}
