@@ -115,17 +115,9 @@ sub sequences_and_series() {
 	my ($a, $r, $n, @terms);
 	$a = &positive_rand(100);
 
-	$r = &positive_rand(10);
-	while ($r <= 2 ){
-		$r = &positive_rand(10);
-	}
+	$r = 2 + &positive_rand(8);
 
-	$n = 6 + &positive_rand(4);
-
-	$n = &positive_rand(20);
-	while ($n <= 6){
-		$n = &positive_rand(15);
-	}
+	$n = 3 + &positive_rand(8);
 
 	@terms[0] = $a;
 	for($i = 1; $i<5; $i++){
