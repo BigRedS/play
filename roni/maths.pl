@@ -46,13 +46,13 @@ $SIG{INT} = \&exit;
 
 my $num = $ARGV[0];
 if (!($num > 0)){
-	$num = 3;
+	$num = 100;
 }
 my $subject = undef;
 if ($ARGV[1]){
 	$subject = $ARGV[1];
 }
-my ($now, $count, $pc);
+my ($now, $count, $pc, $start_time, $score);
 
 &welcome;
 
@@ -189,9 +189,9 @@ sub test(){
 sub quiz(){
 	my $num = shift;
 #	my ($count, $score) = (0,0);
-	my $score;
+#	my $score;
 	$count = 0;
-	my $time = time();
+	$start_time = time();
 	for ($count = 1; $count <= $num; $count++){
 		print "\n\n$count)\t";	
 		my $q = &ask_question();
@@ -206,7 +206,7 @@ sub quiz(){
 	$count--;
 
 	
-	$time = time() - $time;
+	$time = time() - $start_time;
 	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
 	$pc = ( $score / $count  ) * 100;
 	say "Pointless accuracy:".$pc."%";
@@ -318,10 +318,8 @@ sub last_score() {
 
 
 sub exit {
-	if (!$count) { $count = shift; }
-	if (!$pc) { $pc = shift; }
-	if (!$time) { $time = shift; }
-	if (!$score) { $score = shift; }
+	$time = time() - $start_time;
+	$pc = ($score/$count)*100;
 
 	say "You did $count questions in $time seconds"; 
 	say "You scored $pc%";
@@ -333,13 +331,13 @@ sub exit {
 }
 
 sub welcome{
-	say "Welcome to Avi's Magical Q+A thingy. You will be answering questions on:";
+	say "Welcome to Avi's Magical Q+A thingy. You will be answering questions on:\n";
 	foreach(@questions){
 		print "\t";
-		s/_/ /g, $_;
-		print $_;
-		print "\n";
+		my $subject = $_;
+		$subject =~ s/_/ /g;
+		say $subject;
 	}
-	say "Remener, all answers are rounded DOWN. That is, truncated to the decimal";
+	say "\nRemember, all answers are rounded DOWN. That is, truncated to the decimal";
 	say "point. 24.7 = 24.";
 }
