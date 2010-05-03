@@ -20,23 +20,27 @@
 # license which you can find here:				#
 #    http://www.freebsd.org/copyright/freebsd-license.html	#
 
-
-
 #use strict; 	# I know, I know. But &{$subName}() doesn't work
 		# in strict, and I just need to make it work. I 
 		# promise I'll modify it to work in strict. 
 use 5.010;
 use Math::Trig;
 
-## subs implementing questions must be a member of this array:
-#my @questions = ("radians", "test", "differentiation", "sequences_and_series");
-my @questions = ("test");
 
-my $cheatmode = 1; ## set nonzero to be given answers.
+
+## Some configuration:
+
+	# Subs we want to use are listed in @questions. Each time a question is to
+	# be asked, the sub to execute is picked at random from @questions
+
+my @questions = ("radians", "differentiation", "sequences_and_series", "coordinate_geometry");
+#my @questions = ("coordinate_geometry");
+
+my $cheatmode = 0; 			## Set nonzero to be given answers.
+my $record_file = "./.maths.data";	## Where we keep the progress
+
 
 $SIG{INT} = \&exit;
-
-my $record_file = "./.maths.data";
 
 &usage if ($ARGV[0] =~ /\D/);
 
@@ -48,10 +52,43 @@ my $subject = undef;
 if ($ARGV[1]){
 	$subject = $ARGV[1];
 }
+my ($now, $count, $pc);
+
+&welcome;
 
 &quiz ($num); 
 
 ## These are the question subs:
+
+sub coordinate_geometry(){
+	my ($x1, $y1, $x2, $y2);
+	my ($question, $answer);
+	my $questiontype = &positive_rand(2);
+	my $range = 100;
+	my $x1 = &nonzero_rand($range);
+	my $x2 = &nonzero_rand($range);
+	my $y1 = &nonzero_rand($range);
+	my $y2 = &nonzero_rand($range);
+	
+	given($questiontype){
+
+		when(1){
+			$question = "Find the midpoint of ($x1,$y1) and ($x2,$y2).";
+			my $answer_x = int (($x1+$x2)/2);
+			my $answer_y = int (($y1+$y2)/2);
+			$answer = $answer_x.",".$answer_y;
+		}
+		when(2){
+			$question = "Find the distance between ($x1,$y1) and ($x2,$y2).";
+			my $x_len = $x2 - $x1;
+			my $y_len = $y2 - $y1;
+			$answer = int ( sqrt( ($y_len**2) + ($x_len**2)));
+		}
+	}
+		return ($question, $answer);
+
+
+}
 
 sub differentiation(){
 	my ($a, $b, $c, $p, $q, $r, $x);
@@ -84,7 +121,7 @@ sub differentiation(){
 
 sub radians() {
 	my ($a, $r, $l, $theta, $question, $answer);
-	my $questiontype = &nonzero_rand(4);
+	my $questiontype = &positive_rand(4);
 	given ($questiontype){
 		when (1){
 			# Find area of sector:
@@ -151,7 +188,9 @@ sub test(){
 ## answer.
 sub quiz(){
 	my $num = shift;
-	my ($count, $score) = (0,0);
+#	my ($count, $score) = (0,0);
+	my $score;
+	$count = 0;
 	my $time = time();
 	for ($count = 1; $count <= $num; $count++){
 		print "\n\n$count)\t";	
@@ -165,7 +204,6 @@ sub quiz(){
 		}
 	}
 	$count--;
-
 
 	
 	$time = time() - $time;
@@ -194,7 +232,7 @@ sub simple_progress(){
 	}
 	my ($year, $month, $day, $hour, $min, $sec) = (localtime(time))[5,4,3,2,1,0];
 	$year += 1900;
-	my $now = "$year-$month-$day+$hour:$min:$sec";
+	$now = "$year-$month-$day+$hour:$min:$sec";
 	open (F,">>$record_file")
 	 or warn("Could not open $record_file for appending, but it passed the writable test. If you see this error, something's fucked");
 	say  F "$now\t$count\t$pc\t$time";
@@ -214,7 +252,6 @@ sub ask_question() {
 	my ($question, $answer) = &{$q}();
 	print "$question\n\t";
 	if ($cheatmode != 0){say ($answer)};
-#	say "($answer)";		# Uncomment this to enable cheating
 	my $guess = <STDIN>;
 	if ($guess == $answer){
 		return "correct";
@@ -281,16 +318,28 @@ sub last_score() {
 
 
 sub exit {
-	my $count = shift;
-	my $pc = shift;
-	my $time = shift;
-	my $score = shift;
+	if (!$count) { $count = shift; }
+	if (!$pc) { $pc = shift; }
+	if (!$time) { $time = shift; }
+	if (!$score) { $score = shift; }
 
-	$time = ">".$time."<";
+	say "You did $count questions in $time seconds"; 
+	say "You scored $pc%";
 
-	say "count=$count\npc=$pc\ntime=$time\nscore=$score";
 	&simple_progress($count, $pc, $time);
 	print "exiting...";
 	exit 0;
 
+}
+
+sub welcome{
+	say "Welcome to Avi's Magical Q+A thingy. You will be answering questions on:";
+	foreach(@questions){
+		print "\t";
+		s/_/ /g, $_;
+		print $_;
+		print "\n";
+	}
+	say "Remener, all answers are rounded DOWN. That is, truncated to the decimal";
+	say "point. 24.7 = 24.";
 }
