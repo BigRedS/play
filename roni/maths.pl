@@ -29,7 +29,12 @@ use 5.010;
 use Math::Trig;
 
 ## subs implementing questions must be a member of this array:
-my @questions = ("radians", "test", "differentiation", "sequences_and_series");
+#my @questions = ("radians", "test", "differentiation", "sequences_and_series");
+my @questions = ("test");
+
+my $cheatmode = 1; ## set nonzero to be given answers.
+
+$SIG{INT} = \&exit;
 
 my $record_file = "./.maths.data";
 
@@ -160,14 +165,18 @@ sub quiz(){
 		}
 	}
 	$count--;
+
+
+	
 	$time = time() - $time;
 	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
 	$pc = ( $score / $count  ) * 100;
 	say "Pointless accuracy:".$pc."%";
 	if ($last_score = &last_score){
-		say "Last time you got ${last_score}%";
+	say "Last time you got ${last_score}%";
+		
 	}
-	&simple_progress($count, $pc, $time);
+	&exit("$count", "$pc", "$time", "$score");
 }
 
 
@@ -183,8 +192,8 @@ sub simple_progress(){
 	unless (-w $record_file){
 		warn("Could not write progress data. \$record_file appears to not be readable at $record_file");
 	}
-	my ($year, $month, $day, $hour, $min, $sec) = (localtime())[5,4,3,2,1,0];
-	my $year += 1900;
+	my ($year, $month, $day, $hour, $min, $sec) = (localtime(time))[5,4,3,2,1,0];
+	$year += 1900;
 	my $now = "$year-$month-$day+$hour:$min:$sec";
 	open (F,">>$record_file")
 	 or warn("Could not open $record_file for appending, but it passed the writable test. If you see this error, something's fucked");
@@ -204,13 +213,12 @@ sub ask_question() {
 	}
 	my ($question, $answer) = &{$q}();
 	print "$question\n\t";
+	if ($cheatmode != 0){say ($answer)};
 #	say "($answer)";		# Uncomment this to enable cheating
 	my $guess = <STDIN>;
 	if ($guess == $answer){
-#		say "Correct";
 		return "correct";
 	}else{
-#		say " nope - expected $answer";
 		return $answer;
 	}
 }
@@ -269,4 +277,20 @@ sub last_score() {
 		$last_line = $_;
 	}
 	return (split(/\s/, $last_line))[2];
+}
+
+
+sub exit {
+	my $count = shift;
+	my $pc = shift;
+	my $time = shift;
+	my $score = shift;
+
+	$time = ">".$time."<";
+
+	say "count=$count\npc=$pc\ntime=$time\nscore=$score";
+	&simple_progress($count, $pc, $time);
+	print "exiting...";
+	exit 0;
+
 }
