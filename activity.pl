@@ -11,10 +11,10 @@ use strict;
 
 # Looks for files matching syslog* in here, greps them for
 # evidence of activity.
-my $logDir = "./logs/";
+my $logDir = "/var/log/";
 
 # File with a list of domains. Like qmail's rcpthosts file.
-my $domainList = "./hosts.txt";
+my $domainList = "/var/qmail/control/rcpthosts";
 
 # Oldest logfile to check, in months;
 my $maxLogAge = 4;
