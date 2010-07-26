@@ -14,7 +14,8 @@ use strict;
 my $logDir = "/var/log/";
 
 # File with a list of domains. Like qmail's rcpthosts file.
-my $domainList = "/var/qmail/control/rcpthosts";
+my $domainList = $ARGV[0] || "/var/qmail/control/rcpthosts";
+
 
 # Oldest logfile to check, in months;
 my $maxLogAge = 4;
