@@ -7,14 +7,14 @@
 # Doesn't yet know when to stop with log rotations.
 
 use strict;
-use 5.010;
+#use 5.010;
 
 # Looks for files matching syslog* in here, greps them for
 # evidence of activity.
-my $logDir = "/var/log/";
+my $logDir = "./logs/";
 
 # File with a list of domains. Like qmail's rcpthosts file.
-my $domainList = "/var/qmail/control/rcpthosts";
+my $domainList = "./hosts.txt";
 
 # Oldest logfile to check, in months;
 my $maxLogAge = 4;
@@ -105,19 +105,19 @@ foreach my $domain (keys %domains){
 
 # This is dumb and should be smarter:
 my $withActivity = 0;
-say "Domains with activity:";
+print "Domains with activity:\n";
 foreach my $domain (keys %domains){
 	if ($domains{$domain} =~ /.+/){
-		say "\t$domains{$domain}\t$domain";
+		print "\t$domains{$domain}\t$domain\n";
 		$withActivity++;
 	}
 }
 
-say "\n\nDomains without activity:";
+print "\n\nDomains without activity:\n";
 my $withoutActivity = 0;
 foreach my $domain (keys %domains){
 	if ($domains{$domain} !~ /.+/){
-		say "\t$domain";
+		print "\t$domain\n";
 		$withoutActivity++;
 	}
 }
@@ -125,8 +125,8 @@ foreach my $domain (keys %domains){
 my $logFileCount = @logFilesUsed;
 my $logLen = @log;
 
-say "\nRead $logLen lines of $logFileCount logfiles for records dating back $maxLogAge months.";
-say "Found $withActivity domains with activity, and $withoutActivity domains without.";
-say "Looked in $domainList for the list of domains, and $logDir for the logfiles";
+print "\nRead $logLen lines of $logFileCount logfiles for records dating back $maxLogAge months.\n";
+print "Found $withActivity domains with activity, and $withoutActivity domains without.\n";
+print "Looked in $domainList for the list of domains, and $logDir for the logfiles\n";
 
 exit 0
