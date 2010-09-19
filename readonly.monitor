@@ -1,0 +1,65 @@
+#! /usr/bin/perl
+
+use strict;
+
+my $fstab = "/etc/fstab";
+my $testFile = ".write-test";
+
+
+# %fstab is a hash of arrays [mountpoint. options] using the /dev
+# path as a key
+my %fstab;
+open(my $f, "<", $fstab);
+while(<$f>){
+	# (( begins with a slash or 'UUID'))
+	if (( /^\s?\//) || (/^\s?UUID/ )) {
+		my ($dev,$mountpoint,$fs,$opt)=(split(/\s+/, $_))[0,1,2,3];
+		$fstab{$dev} = [$mountpoint, $fs, $opt];
+	}
+}
+
+
+my (@failure, @success);
+foreach my $dev (keys(%fstab)){
+	my $mountpoint = $fstab{$dev}[0];
+	my $fs = $fstab{$dev}[1];
+	my @opt = split(/,/ , $fstab{$dev}[2]);
+	my $file = $mountpoint."/".$testFile;
+	$file =~ s/\/\//\//;
+	#	neither swap nor cd	#mounted auto		# not a floppy disk or a cd
+	if (($fs !~ /(swap|udf)/) && (grep(!/^noauto$/, @opt)) && ($dev !~ /\/dev\/(fd|cdrom)\d/)){
+#		print "dev = $dev\n\tmountpoint = $mountpoint\n\tfs=$fs\n\t";
+#		print "opts = ";
+#		foreach(@opt){
+#			print "$_ ";
+#		}
+#		print "\n";
+		if(-w $file){
+			`touch $file`;
+			if ($? != 0){
+				push(@failure, $file);
+			}
+		}else{
+			push(@failure,$file);
+		}
+	}
+}
+
+
+my $fails = @failure;
+if ($fails > 0){
+	foreach(@failure){
+		chomp $_;
+		print $_." "
+	}
+	if (@failure > 1){
+		print "are read-only\n";
+	}else{
+		print "is read-only\n";
+	}
+	exit 1;
+}else{
+	print "win\n";
+	exit 0
+}
+
