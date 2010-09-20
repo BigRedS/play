@@ -6,7 +6,7 @@ my $fstab = "/etc/fstab";
 my $testFile = ".write-test";
 
 
-# %fstab is a hash of arrays [mountpoint. options] using the /dev
+# %fstab is a hash of arrays [mountpoint, filesystem, options] using the /dev
 # path as a key
 my %fstab;
 open(my $f, "<", $fstab);
