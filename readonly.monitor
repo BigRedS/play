@@ -34,13 +34,10 @@ foreach my $dev (keys(%fstab)){
 #			print "$_ ";
 #		}
 #		print "\n";
-		if(-w $file){
-			`touch $file`;
-			if ($? != 0){
-				push(@failure, $file);
-			}
-		}else{
-			push(@failure,$file);
+
+		`touch $file`;
+		if ($? != 0){
+			push(@failure, $file);
 		}
 	}
 }
