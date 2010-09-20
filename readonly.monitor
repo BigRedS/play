@@ -35,7 +35,7 @@ foreach my $dev (keys(%fstab)){
 #		}
 #		print "\n";
 
-		`touch $file`;
+		`touch $file 2>&1 > /dev/null`;
 		if ($? != 0){
 			push(@failure, $file);
 		}
