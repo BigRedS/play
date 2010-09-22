@@ -1,0 +1,58 @@
+#! /usr/bin/perl
+
+use LWP::Simple;
+use strict;
+
+my $url = "http://minecraft.net/stats.jsp";
+
+if($ARGV[0] =~ /config/){
+	if ($0 =~ /popularity/){
+		print <<EOF
+graph_category games
+graph_title Minecraft Popularity
+graph_vlabel users
+paying.label Paid-up users
+free.label regstered users
+EOF
+	}else{
+		print <<EOF
+graph_category games
+graph_title Minecraft players
+graph_vlabel integers
+servers.label servers
+players.label players
+EOF
+	}
+
+exit 0;
+}
+
+
+my $content = get($url);
+my $playersOnline;
+my $servers;
+my $registeredUsers;
+my $payingUsers;
+my $payingUserspc;
+
+if ($content =~ /\n(\d+) players online, in (\d+) servers/i){
+	$playersOnline = $1;
+	$servers = $2;
+}
+if ($content =~/\n(\d+) registered users, of which (\d+)\s\((\d+)/){
+	$registeredUsers = $1;
+	$payingUsers = $2;
+	$payingUserspc = $3;
+}
+
+if ($0 =~ /popularity/){
+	print <<EOF
+paying.value $payingUsers
+free.label $registeredUsers
+EOF
+}else{
+	print <<EOF
+servers.value $servers
+players.value $playersOnline
+EOF
+}
