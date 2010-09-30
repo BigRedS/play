@@ -1,48 +1,39 @@
 #! /usr/bin/perl
 
-use strict;
-
 ## Chance in 1000 that Jon should be kicked:
-my $chance = 100;
+my $chance = 10;
 
 ## Minimum time to wait between kicks, in minutes:
 my $betweenKicks = 20;
 
 ## Command to run to kick Jon
-my $kickJon = "echo \"1\"";
+my $kickJon = 'screen -x minecraft -X stuff "`printf \'kick n1md4 \r\'`"';
 
 ## Where to point stderr and stdout
-my $errors = "/home/avi/bin/test/kickjond.err";
-my $out = "/home/avi/bin/test/kickjond.out";
+my $errors = "/dev/null";
+my $out = "/dev/null";
 
-
-
-
-
+use strict;
 use POSIX qw(setsid);
 
-&daemonise;
-
 my $betweenKicks = $betweenKicks * 60;
-my $lastkick = 0;
+my $lastKick = 0;
+my $chance = $chance * 10;
 
-
+&daemonise;
 while(1) {
-	if ((time - $lastkick) > $betweenKicks){
-	
-		my $kick = int(rand(1000));
-
-		if ($kick > $chance){
+	if ((time - $lastKick) > $betweenKicks){
+		if (int(rand(1000)) <= $chance){
 			`$kickJon`;
-			my $lastkick = time();
+			$lastKick = time();
 		}
 	}
-	sleep(3);
+	sleep(60);
 }
 
 sub daemonise {
 	chdir '/' or die "error chdiring to / : $!";
-	open (STDIN, "/dev/null") or die "Error reading from /dev/null : $!";
+	open (STDIN, "<", "/dev/null") or die "Error reading from /dev/null : $!";
 	open (STDOUT, ">>",  "$out") or die "Error attaching STDOUT to $out : $!"; 
 	open (STDERR, ">>", "$errors") or die "Error attaching STDERR to $errors : $!";
 	defined(my $pid = fork ) or die "Error forking : $!";
