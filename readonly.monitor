@@ -11,52 +11,51 @@ my $testFile = ".write-test";
 my %fstab;
 open(my $f, "<", $fstab);
 while(<$f>){
-	# (( begins with a slash or 'UUID'))
-	if (( /^\s?\//) || (/^\s?UUID/ )) {
-		my ($dev,$mountpoint,$fs,$opt)=(split(/\s+/, $_))[0,1,2,3];
-		$fstab{$dev} = [$mountpoint, $fs, $opt];
-	}
+        # (( begins with a slash or 'UUID'))
+        if (( /^\s?\//) || (/^\s?UUID/ )) {
+                my ($dev,$mountpoint,$fs,$opt)=(split(/\s+/, $_))[0,1,2,3];
+                $fstab{$dev} = [$mountpoint, $fs, $opt];
+        }
 }
 
 
 my (@failure, @success);
 foreach my $dev (keys(%fstab)){
-	my $mountpoint = $fstab{$dev}[0];
-	my $fs = $fstab{$dev}[1];
-	my @opt = split(/,/ , $fstab{$dev}[2]);
-	my $file = $mountpoint."/".$testFile;
-	$file =~ s/\/\//\//;
-	#	neither swap nor cd	#mounted auto		# not a floppy disk or a cd
-	if (($fs !~ /(swap|udf)/) && (grep(!/^noauto$/, @opt)) && ($dev !~ /\/dev\/(fd|cdrom)\d/)){
-#		print "dev = $dev\n\tmountpoint = $mountpoint\n\tfs=$fs\n\t";
-#		print "opts = ";
-#		foreach(@opt){
-#			print "$_ ";
-#		}
-#		print "\n";
+        my $mountpoint = $fstab{$dev}[0];
+        my $fs = $fstab{$dev}[1];
+        my @opt = split(/,/ , $fstab{$dev}[2]);
+        my $file = $mountpoint."/".$testFile;
+        $file =~ s/\/\//\//;
+        #       neither swap nor cd     #mounted auto           # not a floppy disk or a cd
+        if (($fs !~ /(swap|udf)/) && (grep(!/^noauto$/, @opt)) && ($dev !~ /\/dev\/(fd|cdrom)\d/)){
+#               print "dev = $dev\n\tmountpoint = $mountpoint\n\tfs=$fs\n\t";
+#               print "opts = ";
+#               foreach(@opt){
+#                       print "$_ ";
+#               }
+#               print "\n";
 
-		`touch $file 2>&1 > /dev/null`;
-		if ($? != 0){
-			push(@failure, $file);
-		}
-	}
+                `sudo /usr/bin/touch $file 2>&1 > /dev/null`;
+                if ($? != 0){
+                        push(@failure, $dev);
+                }
+        }
 }
 
 
 my $fails = @failure;
 if ($fails > 0){
-	foreach(@failure){
-		chomp $_;
-		print $_." "
-	}
-	if ($fails > 1){
-		print "are read-only\n";
-	}else{
-		print "is read-only\n";
-	}
-	exit 1;
+        foreach(@failure){
+                chomp $_;
+                print $_." ";
+        }
+        if ($fails > 1){
+                print "are read-only\n";
+        }else{
+                print "is read-only\n";
+        }
+        exit 1;
 }else{
-	print "win\n";
-	exit 0
+        print "All writeable\n";
+        exit 0
 }
-
