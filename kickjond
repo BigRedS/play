@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-## Chance in 1000 that Jon should be kicked:
+## Chance in 100 that Jon should be kicked:
 my $chance = 10;
 
 ## Minimum time to wait between kicks, in minutes:
