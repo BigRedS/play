@@ -86,6 +86,8 @@ sub preconfigure(){
 	$filename =~ s/\@/\./;
 	$filename .= ".pref";
 
+	print "Configuring $email ($name) in $filename\n";
+
 	`echo -e \"full_name=$name\" >> /var/lib/squirrelmail/data/$filename`;
 	`echo -e \"email_address=$email\" >> /var/lib/squirrelmail/data/$filename`;
 	`chown www-data:www-data /var/lib/squirrelmail/data/$filename`;
