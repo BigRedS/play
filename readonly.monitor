@@ -19,7 +19,7 @@ while(<$f>){
 }
 
 
-my (@failure, @success);
+my (@failure);
 foreach my $dev (keys(%fstab)){
         my $mountpoint = $fstab{$dev}[0];
         my $fs = $fstab{$dev}[1];
@@ -28,13 +28,6 @@ foreach my $dev (keys(%fstab)){
         $file =~ s/\/\//\//;
         #       neither swap nor cd     #mounted auto           # not a floppy disk or a cd
         if (($fs !~ /(swap|udf)/) && (grep(!/^noauto$/, @opt)) && ($dev !~ /\/dev\/(fd|cdrom)\d/)){
-#               print "dev = $dev\n\tmountpoint = $mountpoint\n\tfs=$fs\n\t";
-#               print "opts = ";
-#               foreach(@opt){
-#                       print "$_ ";
-#               }
-#               print "\n";
-
                 `sudo /usr/bin/touch $file 2>&1 > /dev/null`;
                 if ($? != 0){
                         push(@failure, $dev);
@@ -43,13 +36,12 @@ foreach my $dev (keys(%fstab)){
 }
 
 
-my $fails = @failure;
-if ($fails > 0){
+if ($failure[0]){
         foreach(@failure){
                 chomp $_;
                 print $_." ";
         }
-        if ($fails > 1){
+        if ($failure[1]){
                 print "are read-only\n";
         }else{
                 print "is read-only\n";
