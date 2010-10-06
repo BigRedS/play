@@ -26,8 +26,8 @@ foreach($loadavg1, $loadavg5, $loadavg15){
 		$loadavg = $_;
 	}
 }
-my ($memTot, $memUsed) = (split (/\s+/, `free | grep ^Mem`))[1,2];
-my $memPercent = ( $memUsed / $memTot) * 100;
+my ($memUsed, $memFree) = (split (/\s+/, `free | grep ^-`))[2,3];
+my $memPercent = ( $memUsed / ( $memUsed + $memFree ) ) * 100;
 
 my $processors = `grep processor /proc/cpuinfo | wc -l`;
 chomp $processors;
