@@ -1,0 +1,37 @@
+#! /usr/bin/perl
+
+use strict;
+use 5.010;
+
+my $memory_threshold = "90";
+my $load_threshold = "1";
+my $filename_suffix = `date +%F-%H%M%S`;
+my $filename_base = "./overloaded";
+
+my @dump_cmds = ("ps auxc", "ps aux", "w", "pstree");
+
+my ($loadavg1,$loadavg5,$loadavg15) = (split (/\s/, `cat /proc/loadavg`))[0,1,2,3];
+# $loadavg is the highest of the three loadavgs. should it trigger on lowest? shortest?
+my $loadavg;
+foreach($loadavg1, $loadavg5, $loadavg15){	
+	if ($_ > $loadavg){
+		$loadavg = $_;
+	}
+}
+my ($memTot, $memUsed) = (split (/\s+/, `free | grep ^Mem`))[1,2];
+my $memPercent = ( $memUsed / $memTot) * 100;
+
+my $processors = `grep processor /proc/cpuinfo | wc -l`;
+chomp $processors;
+
+my $load = $loadavg/$processors;
+
+my $file = $filename_base.$filename_suffix;
+
+if ( ($memPercent > $memory_threshold) || ( $load > $load_threshold) ) {
+	foreach(@dump_cmds){
+		`echo "## $_ " >> $file`;
+		`$_ >> $file`;
+		`echo "" >> $file`;
+	}
+}
