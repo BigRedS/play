@@ -5,10 +5,18 @@ use 5.010;
 
 my $memory_threshold = "90";
 my $load_threshold = "1";
+my $directory = "/var/log/overloaded";
 my $filename_suffix = `date +%F-%H%M%S`;
-my $filename_base = "./overloaded";
+my $filename_base = "overloaded";
 
-my @dump_cmds = ("ps auxc", "ps aux", "w", "pstree");
+if( ! -d $directory ){
+	die "Directory $directory does not exist!";
+}
+if( ! -w $directory ){
+	die "Direcotry $directory is not writeable!";
+}
+
+my @dump_cmds = ("ps rauxwwc", "ps rauxww", "w", "pstree", "free -m");
 
 my ($loadavg1,$loadavg5,$loadavg15) = (split (/\s/, `cat /proc/loadavg`))[0,1,2,3];
 # $loadavg is the highest of the three loadavgs. should it trigger on lowest? shortest?
@@ -26,12 +34,19 @@ chomp $processors;
 
 my $load = $loadavg/$processors;
 
-my $file = $filename_base.$filename_suffix;
+my $file = $directory."/".$filename_base."-".$filename_suffix;
 
 if ( ($memPercent > $memory_threshold) || ( $load > $load_threshold) ) {
 	foreach(@dump_cmds){
 		`echo "## $_ " >> $file`;
 		`$_ >> $file`;
 		`echo "" >> $file`;
+		
 	}
+	print "Failed\n";
+	exit 1;
+}else{
+	print "Passed\n";
+	exit 0;
 }
+	
