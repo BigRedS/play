@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
 use strict;
-use 5.010;
+
 
 my $memory_threshold = "90";
 my $load_threshold = "1";
