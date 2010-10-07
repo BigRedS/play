@@ -5,12 +5,15 @@ use strict;
 my $fstab = "/etc/fstab";
 my $testFile = ".write-test";
 
-
 # %fstab is a hash of arrays [mountpoint, filesystem, options] using the /dev
 # path as a key
 my %fstab;
+my @ignore;
 open(my $f, "<", $fstab);
 while(<$f>){
+	if ( /^#readonly\.ignore:/i ){
+		my @ignore = split(/,\s?/, (split(/:/, $_))[1]);
+	}
         # (( begins with a slash or 'UUID'))
         if (( /^\s?\//) || (/^\s?UUID/ )) {
                 my ($dev,$mountpoint,$fs,$opt)=(split(/\s+/, $_))[0,1,2,3];
@@ -21,18 +24,22 @@ while(<$f>){
 
 my (@failure);
 foreach my $dev (keys(%fstab)){
-        my $mountpoint = $fstab{$dev}[0];
-        my $fs = $fstab{$dev}[1];
-        my @opt = split(/,/ , $fstab{$dev}[2]);
-        my $file = $mountpoint."/".$testFile;
-        $file =~ s/\/\//\//;
-        #       neither swap nor cd     #mounted auto           # not a floppy disk or a cd
-        if (($fs !~ /(swap|udf)/) && (grep(!/^noauto$/, @opt)) && ($dev !~ /\/dev\/(fd|cdrom)\d/)){
-                `sudo /usr/bin/touch $file 2>&1 > /dev/null`;
-                if ($? != 0){
-                        push(@failure, $dev);
-                }
-        }
+	if ( !grep(/^$dev$/, @ignore)) {
+	        my $mountpoint = $fstab{$dev}[0];
+	        my $fs = $fstab{$dev}[1];
+	        my @opt = split(/,/ , $fstab{$dev}[2]);
+	        my $file = $mountpoint."/".$testFile;
+	        $file =~ s/\/\//\//;
+	        #       neither swap nor cd     #mounted auto           # not a floppy disk or a cd
+	        if (($fs !~ /(swap|udf)/) && (grep(!/^noauto$/, @opt)) && ($dev !~ /\/dev\/(fd|cdrom)\d/)){
+	                `sudo /usr/bin/touch $file 2>&1 > /dev/null`;
+	                if ($? != 0){
+	                        push(@failure, $dev);
+	                }
+	        }
+	}else{
+		print "ignoring $_\n";
+	}
 }
 
 
