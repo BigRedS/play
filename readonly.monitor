@@ -39,7 +39,6 @@ while(<$f>){
 
 my (@failure);
 foreach my $dev (keys(%fstab)){
-	print "dev = $dev\n";
 	if ( !grep(/$dev/, @ignore)) {
 	        my $mountpoint = $fstab{$dev}[0];
 	        my $fs = $fstab{$dev}[1];
