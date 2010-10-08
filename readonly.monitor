@@ -1,6 +1,22 @@
 #! /usr/bin/perl
-
 use strict;
+
+#
+# By Avi, aged 25 1/2 
+#
+
+# Parses fstab, and for each device that looks like it should be writeable, 
+# attempts to write a file in the root of its mountpoint. Ignores CDs, 
+# floppy disks and swap. Anything else can be ignored with a comment in fstab so:
+#
+#readonly.ignore:/dev/sda1 /dev/sda2
+#
+# which specifies devices to not check. 
+#
+# The 'current' version of this can be found at:
+#   http://github.com/BigRedS/play/blob/master/readonly.monitor
+# click 'raw' for something wgettable. 
+#
 
 my $fstab = "/etc/fstab";
 my $testFile = ".write-test";
