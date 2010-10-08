@@ -21,11 +21,6 @@ while(<$f>){
         }
 }
 
-foreach(@ignore){
-	print"$_ ";
-}
-print "\n";
-
 my (@failure);
 foreach my $dev (keys(%fstab)){
 	print "dev = $dev\n";
