@@ -12,7 +12,7 @@ my @ignore;
 open(my $f, "<", $fstab);
 while(<$f>){
 	if ( /^#readonly\.ignore:/i ){
-		my @ignore = split(/,\s?/, (split(/:/, $_))[1]);
+		@ignore = split(/,\s?/, (split(/:/, $_))[1]);
 	}
         # (( begins with a slash or 'UUID'))
         if (( /^\s?\//) || (/^\s?UUID/ )) {
@@ -21,10 +21,15 @@ while(<$f>){
         }
 }
 
+foreach(@ignore){
+	print"$_ ";
+}
+print "\n";
 
 my (@failure);
 foreach my $dev (keys(%fstab)){
-	if ( !grep(/^$dev$/, @ignore)) {
+	print "dev = $dev\n";
+	if ( !grep(/$dev/, @ignore)) {
 	        my $mountpoint = $fstab{$dev}[0];
 	        my $fs = $fstab{$dev}[1];
 	        my @opt = split(/,/ , $fstab{$dev}[2]);
@@ -37,8 +42,6 @@ foreach my $dev (keys(%fstab)){
 	                        push(@failure, $dev);
 	                }
 	        }
-	}else{
-		print "ignoring $_\n";
 	}
 }
 
