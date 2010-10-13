@@ -8,7 +8,7 @@
 # various parameters of this. It is of the form
 # key=value
 # with no whitespace surrounding the equals sign. Keys to be defined are:
-#   file to backup:	file
+#   file:		local_file, remote_key
 #   S3: 		access_key_id, secret_access_key bucket.
 #   Reporting email:	email_to email_subject email_body sendmail
 #
@@ -31,7 +31,7 @@ use strict;
 use Net::Amazon::S3; # libnet-amazon-s3-perl
 
 # 'parse' config file to get S3 details; create S3 object
-my ($accessKeyID, $secretAccessKey, $bucketName, $file, $to, $subject, $body, $sendmail);
+my ($accessKeyID, $secretAccessKey, $bucketName, $file, $to, $subject, $body, $sendmail, $remote_key);
 open (my $f, "<", $secrets) or die "Error opening secrets file $secrets";
 while (<$f>){
 	unless(/^#/){
@@ -44,8 +44,10 @@ while (<$f>){
 			$secretAccessKey = $value;
 		}elsif ($key =~ /^bucket$/){
 			$bucketName=$value;
-		}elsif ($key =~ /^upload_file$/){
+		}elsif ($key =~ /^local_file$/){
 			$file=$value;
+		}elsif ($key =~ /^remote_key$/){
+			$remote_key=$value;
 		}elsif ($key =~ /^email_to$/){
 			$to=$value;
 		}elsif ($key =~ /^email_subject$/){
@@ -60,6 +62,18 @@ while (<$f>){
 	}
 }
 
+# Since having the date might come in handy:
+my @now=localtime(time());
+my $year = $now[5] + 1900;
+$now[4]++;
+my $month = sprintf("%02d", $now[4]);
+my $today="$year-$month-$now[3]";
+
+
+
+
+# Here's where the S3 stuff starts
+
 my $s3 = Net::Amazon::S3->new(
 	{
 		aws_access_key_id	=> $accessKeyID,
@@ -68,38 +82,30 @@ my $s3 = Net::Amazon::S3->new(
 	}
 );
 
+# Uncomment this to list all the buckets, for testing etc.
+#	my $response = $s3->buckets;
+#	print "buckets:\n";
+#	foreach my $bucket ( @{ $response->{buckets} } ) {print "\t" . $bucket->bucket . "\n";}
 
 
-# list all buckets
-#my $response = $s3->buckets;
-#print "buckets:\n";
-#foreach my $bucket ( @{ $response->{buckets} } ) {
-#	print "\t" . $bucket->bucket . "\n";
-#}
-
+# spawn a bucket object from our S3 one.
 my $bucket = $s3->bucket($bucketName) or die ("Error using(?) bucket $bucketName");
 
-my @now=localtime(time());
-my $year = $now[5] + 1900;
-$now[4]++;
-my $month = sprintf("%02d", $now[4]);
-my $today="$year-$month-$now[3]";
-#y $key = "backup$today";
-my $key = $today;
+# variable substitution on the key:
+my $key = $remote_key;
+$key =~ s/FILE/$file/g;
+$key =~ s/KEY/$key/g;
+$key =~ s/BUCKET/$bucketName/g;
+$key =~ s/TODAY/$today/g;
 
-$key = "initial_test";
 
-# create S3 object
+# Move the file across:
 #$bucket->add_key_filename($key, $file) or die $s3->err .": ".$s3->errstr;
 
-## list files in the bucket
-#my $response = $bucket->list_all or die $s3->err . ": " . $s3->errstr;
-#print "Bucket $bucketName contains keys:\n";
-#foreach my $key ( @{ $response->{keys} } ) {
-#	my $key_name = $key->{key};
-#	my $key_size = $key->{size};
-#	print "\t$key_name of size $key_size\n";
-#}
+# Uncomment this to list files in the bucket, for testing etc.
+#	my $response = $bucket->list_all or die $s3->err . ": " . $s3->errstr;
+#	print "Bucket $bucketName contains keys:\n";
+#	foreach my $key ( @{ $response->{keys} } ) {print "\t$key->{key} of size $key->{size}\n";}
 
 
 ## Send an email, if we want:
