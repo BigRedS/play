@@ -8,9 +8,9 @@
 # various parameters of this. It is of the form
 # key=value
 # with no whitespace surrounding the equals sign. Keys to be defined are:
-#   file:		local_file, remote_key
-#   S3: 		access_key_id, secret_access_key bucket.
-#   Reporting email:	email_to email_subject email_body sendmail
+#   file:		local_file,  remote_key
+#   S3: 		access_key_id,  secret_access_key,  bucket.
+#   Reporting email:	email_to,  email_subject,  email_body,  sendmail
 #
 # sendmail is used in a pipe [ open($m, "|$sendmail"); ] so should be defined
 # as something that can be used as such. If sendmail isn't defined, no mail 
@@ -98,7 +98,6 @@ $key =~ s/KEY/$key/g;
 $key =~ s/BUCKET/$bucketName/g;
 $key =~ s/TODAY/$today/g;
 
-
 # Move the file across:
 #$bucket->add_key_filename($key, $file) or die $s3->err .": ".$s3->errstr;
 
@@ -110,7 +109,6 @@ $key =~ s/TODAY/$today/g;
 
 ## Send an email, if we want:
 if ($sendmail !~ /^$/){
-	print `date`;
 	$body =~ s/FILE/$file/g;
 	$body =~ s/KEY/$key/g;
 	$body =~ s/BUCKET/$bucketName/g;
