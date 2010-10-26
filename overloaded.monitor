@@ -9,7 +9,8 @@
 
 use strict;
 
-my @dump_cmds = ("ps rauxwwc", "ps rauxww", "w", "pstree -A", "free -m");
+my @dump_cmds = ("ps rauxwwc", "ps rauxww", "w", "pstree -A", "free -m", "iostat");
+if (`which iotop`){push (@dump_cmds, "iotop -b -o -n 1")}
 my $memory_threshold = "90";
 my $load_threshold = "1";	# This is per-cpu. A value of '1' on a two-cpu box means
 				# that the threshold is at a 'true' load avg value of 2
