@@ -2,51 +2,58 @@
 
 use strict;
 
+# Mon plugin for dumping data to files if the load or memory usage is too high. Isn't 
+# supposed to replace the load and memory plugins, it's just to help make sure there's
+# some useful data post-overload to work out how to stop the next one.
 
+my @dump_cmds = ("ps rauxwwc", "ps rauxww", "w", "pstree -A", "free -m");
 my $memory_threshold = "90";
-my $load_threshold = "1";
+my $load_threshold = "1";	# This is per-cpu. A value of '1' on a two-cpu box means
+				# that the threshold is at a 'true' load avg value of 2
+				# cpus are counted via /proc/cpuinfo | grep processor :)
 my $directory = "/var/log/overloaded";
 my $filename_suffix = `date +%F-%H%M%S`;
 my $filename_base = "overloaded";
 
-if( ! -d $directory ){
-	die "Directory $directory does not exist!";
-}
-if( ! -w $directory ){
-	die "Direcotry $directory is not writeable!";
+if( ( ! -w $directory ) || ( ! -d $directory ) ){
+	die "$directory is not a writeable directory!";
 }
 
-my @dump_cmds = ("ps rauxwwc", "ps rauxww", "w", "pstree", "free -m");
-
-my ($loadavg1,$loadavg5,$loadavg15) = (split (/\s/, `cat /proc/loadavg`))[0,1,2,3];
-# $loadavg is the highest of the three loadavgs. should it trigger on lowest? shortest?
+open(my $f, "<", "/proc/loadavg");
+my ($loadavg1,$loadavg5,$loadavg15) = (split (/\s/, <$f>))[0,1,2,3];
 my $loadavg;
 foreach($loadavg1, $loadavg5, $loadavg15){	
 	if ($_ > $loadavg){
 		$loadavg = $_;
 	}
 }
+my $processors = 0;
+eval{
+	open(my $f, "<", "/proc/cpuinfo");
+	while(<$f>){
+		if (/processor/){
+			$processors++;
+		}
+	}
+};
+if($@){$processors = 1;}
+my $load = $loadavg/$processors;
+
 my ($memUsed, $memFree) = (split (/\s+/, `free | grep ^-`))[2,3];
 my $memPercent = ( $memUsed / ( $memUsed + $memFree ) ) * 100;
-
-my $processors = `grep processor /proc/cpuinfo | wc -l`;
-chomp $processors;
-
-my $load = $loadavg/$processors;
 
 my $file = $directory."/".$filename_base."-".$filename_suffix;
 
 if ( ($memPercent > $memory_threshold) || ( $load > $load_threshold) ) {
 	foreach(@dump_cmds){
-		`echo "## $_ " >> $file`;
+		`echo "# # # # # # # $_" >> $file`;
 		`$_ >> $file`;
 		`echo "" >> $file`;
-		
 	}
-	print "Failed\n";
+	print "Failed. l:$load_threshold m:$memory_threshold\n";
 	exit 1;
 }else{
-	print "Passed\n";
+	print "Passed. l:$load_threshold m:$memory_threshold\n";
 	exit 0;
 }
-	
+
