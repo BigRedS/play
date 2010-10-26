@@ -1,10 +1,13 @@
 #! /usr/bin/perl
 
-use strict;
-
 # Mon plugin for dumping data to files if the load or memory usage is too high. Isn't 
 # supposed to replace the load and memory plugins, it's just to help make sure there's
 # some useful data post-overload to work out how to stop the next one.
+
+# The latest version of this script should always be available at
+#   http://github.com/BigRedS/play/blob/master/overloaded.monitor
+
+use strict;
 
 my @dump_cmds = ("ps rauxwwc", "ps rauxww", "w", "pstree -A", "free -m");
 my $memory_threshold = "90";
@@ -56,4 +59,3 @@ if ( ($memPercent > $memory_threshold) || ( $load > $load_threshold) ) {
 	print "Passed. l:$load_threshold m:$memory_threshold\n";
 	exit 0;
 }
-
