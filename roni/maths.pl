@@ -25,40 +25,77 @@
 		# promise I'll modify it to work in strict. 
 use 5.010;
 use Math::Trig;
-
-
+my $home = $ENV{HOME};
 
 ## Some configuration:
 
 	# Subs we want to use are listed in @questions. Each time a question is to
 	# be asked, the sub to execute is picked at random from @questions
 
-my @questions = ("radians", "differentiation", "sequences_and_series", "coordinate_geometry");
-#my @questions = ("coordinate_geometry");
 
-my $cheatmode = 0; 			## Set nonzero to be given answers.
-my $record_file = "./.maths.data";	## Where we keep the progress
+my ($cheatmode, $granular_data, $aggregate_data, $user, $host, $destinationDir);
 
+my $configFile = "$home/.maths/conf";
+open ($c, "<", $configFile) or die ("ERROR: Couldn't open configfile $configFile\n");
+while(<$c>){
+	unless($_ =~ /^#/){
+		my ($key,$value)=(split(/=/, $_))[0.1];
+		if ($key =~ /cheat/){
+			$cheatmode = $value;
+		}elsif($key=~/granular_data_file/){
+			$granular_data = $value;
+		}elsif($key=~/aggregate_data_file/){
+			$aggregate_data = $value;
+		}elsif($key=~/ssh_user/){
+			$user = $value;
+		}elsif($key=~/ssh_host/){
+			$host = $value;
+		}elsif($key=~/ssh_dir/){
+			$destinationDir = $value;
+		}elsif($key=~/default_number_of_questions/){
+			$numQs = $value;
+		}elsif($key=~/test_only/){
+			$testOnly = $value;
+		}else{
+			print STDERR "WARN: Unexpected option: $key\n";
+		}
+	}
+}
+
+my $questions;
+if($testOnly =~ /yes/){
+	@questions = ("test");
+}else{
+	@questions = ("radians", "differentiation", "sequences_and_series", "coordinate_geometry");
+}
+
+
+close ($c);
+
+my $startTime = time();
 
 $SIG{INT} = \&exit;
 
 &usage if ($ARGV[0] =~ /\D/);
-
 my $num = $ARGV[0];
 if (!($num > 0)){
 	$num = 100;
 }
+
 my $subject = undef;
 if ($ARGV[1]){
 	$subject = $ARGV[1];
 }
 my ($now, $count, $pc, $start_time, $score);
 
+# Bunch of welcoming text
 &welcome;
 
+## Right then, let's ask some questions:
 &quiz ($num); 
 
 ## These are the question subs:
+
 
 sub coordinate_geometry(){
 	my ($x1, $y1, $x2, $y2);
@@ -181,62 +218,51 @@ sub test(){
 	return ($question, $answer);
 }
 
-## Worker Subs ##
-# # # # # # # # #
+# # Worker Subs # #
+# # # # # # # # # #
 
-## Invokes &ask_question to do the actual asking. This just judges the 
-## answer.
+# Invokes &ask_question to do the actual asking. This just judges the 
+# answer.
+# 
+# Input: integer, how many questions to ask
+
 sub quiz(){
-	my $num = shift;
-#	my ($count, $score) = (0,0);
-#	my $score;
+	my $num = shift;	# How many questions to ask
 	$count = 0;
 	$start_time = time();
 	for ($count = 1; $count <= $num; $count++){
 		print "\n\n$count)\t";	
-		my $q = &ask_question();
+		my ($q,$subject) = &ask_question();
+		
+		my($sec,$min,$hr,$day,$mon,$yr)=(localtime)[0,1,2,3,4,5];
+		$mon++;
+		$yr+=1900;
+		my $datetime = "$yr $mon $day $hr $min $sec";
 
+		my $line = "$startTime\t$datetime\t$subject\t";
 		if($q =~ /correct/ ){
 			$score++;
 			say "\tCorrect!";
+			$line.="1";
 		}else{
 			say "\tNope. Expected $q";
+			$line.="0";
 		}
+		if ($testOnly =~ /yes/){
+			$line.="+";
+		}
+		push (@stats, $line);
 	}
 	$count--;
-
-	
 	$time = time() - $start_time;
 	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
 	$pc = ( $score / $count  ) * 100;
 	say "Pointless accuracy:".$pc."%";
 	if ($last_score = &last_score){
-	say "Last time you got ${last_score}%";
-		
+		say "Last time you got ${last_score}%";
 	}
+
 	&exit("$count", "$pc", "$time", "$score");
-}
-
-
-## Writes progress data to file.
-sub simple_progress(){
-	my $count = shift;
-	my $pc = shift;
-	my $time = shift;
-	
-	unless (-e $record_file){
-		qx(touch $record_file);
-	}
-	unless (-w $record_file){
-		warn("Could not write progress data. \$record_file appears to not be readable at $record_file");
-	}
-	my ($year, $month, $day, $hour, $min, $sec) = (localtime(time))[5,4,3,2,1,0];
-	$year += 1900;
-	$now = "$year-$month-$day+$hour:$min:$sec";
-	open (F,">>$record_file")
-	 or warn("Could not open $record_file for appending, but it passed the writable test. If you see this error, something's fucked");
-	say  F "$now\t$count\t$pc\t$time";
-	close F;
 }
 
 ## Picks a question at random, asks it, and prompts for an answer. 
@@ -254,10 +280,44 @@ sub ask_question() {
 	if ($cheatmode != 0){say ($answer)};
 	my $guess = <STDIN>;
 	if ($guess == $answer){
-		return "correct";
+		return ("correct", $q);
 	}else{
-		return $answer;
+		return ($answer, $q);
 	}
+}
+
+# Writes progress data to file.
+sub simple_progress(){
+	$granular_data = $mathsDir."/".$granular_data;
+	$aggregate_data = $mathsDir."/".$aggregate_data;
+	foreach($granular_data, $aggregate_data){
+		unless(-e $_){
+			`touch $_`;
+		}
+	}
+
+	unless (-d $mathsDir){
+		`mkdir -p $mathsDir`
+	}
+
+	
+	unless (-w $granular_data){
+		warn "Granluar data file $granular_data not writeable. No detailled stats for you\n";
+	}else{
+		open (F,">>$granular_data");
+		foreach(@stats){
+			print F $_."\n";
+		}
+	}
+
+	unless (-w $aggregate_data){
+		warn "Summary data file $aggregate_data not writeable. No summarised stats for you\n";
+	}else{
+		open (F,">>$aggregate_data");
+		print F "$w\t$count\t$pc\t$time\n";
+	}
+
+	`scp $mathsDir/* $user@$server:$destinationDir`;
 }
 
 
@@ -325,7 +385,7 @@ sub exit {
 	say "You scored $pc%";
 
 	&simple_progress($count, $pc, $time);
-	print "exiting...";
+	print "exiting...\n";
 	exit 0;
 
 }
