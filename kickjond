@@ -1,5 +1,15 @@
 #! /usr/bin/perl
 
+# 
+# Jon might play a little too much Minecraft. This is a script that
+# connects to the screen session on the server at work and pseudo-
+# randomly kicks him. It's started with a cronjob (`kickjond`) and 
+# stopped with another one (`killall kickjond`)
+#
+# There's some humanity: he can only be kicked a maximum of two times 
+# in ten minutes. This is also a reasonable example of a really really
+# simple perl daemon.
+
 ## Chance in 100 that Jon should be kicked:
 my $chance = 10;
 
