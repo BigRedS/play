@@ -1,80 +1,104 @@
 #! /usr/bin/perl
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#		Avi's Wonderful q+a Thingy			#
-#								#
-# By (and (c)) Avi Greenbury, aged 24 3/4			#
-# 								#
-# Each form of question is a sub, and should be named in the 	#
-# array @questions. It should return two values in a list 	#
-# context the first being the question, the latter the answer. 	#
-# The supplied answer ('$guess') is tested in a 		#
-# 		if ($guess == $answer){				#
-# so regexps should work. Importantly, no guessing goes on. If 	#
-# you're only interested in integers (sensible) then make 	#
-# $answer an appropriately rounded integer.			#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+# requires: dbi (libdbi-perl)
 
 # This is free software. It is licensed under the FreeBSD 	#
 # license which you can find here:				#
 #    http://www.freebsd.org/copyright/freebsd-license.html	#
 
+
+# Configuration is read from /home/.maths/config. This requires some
+# paramaters be set, but doesn't actually test for any of them. They 
+# are, in no particular order, as follows:
+#  cheatmode		if set to 'yes', wil display the answer when
+#			asking the question
+#  test_only		if set to 'yes', will only ask one really basic
+#			question, the answer to which is 42
+#  verbosity		if set to 'info', prints odd bits of information
+#			to STDERR during operation. When set to debug it 
+#			prints more
+# MySQL db info:
+#  db_host db_port db_name db_user db_pass
+
+# The subjects on which to ask qustions are defined in @questions. 
+# This is an array of subroutine names, which are picked and 
+# executed at random.
+
 #use strict; 	# I know, I know. But &{$subName}() doesn't work
 		# in strict, and I just need to make it work. I 
 		# promise I'll modify it to work in strict. 
+
 use 5.010;
 use Math::Trig;
+use DBI;
+use DBD::mysql;
 my $home = $ENV{HOME};
 
-## Some configuration:
-
-	# Subs we want to use are listed in @questions. Each time a question is to
-	# be asked, the sub to execute is picked at random from @questions
-
-
-my ($cheatmode, $granular_data, $aggregate_data, $user, $host, $destinationDir);
+$SIG{INT} = \&exit;
 
 my $configFile = "$home/.maths/conf";
+my ($cheatmode, $dbHost, $dbName, $dbUser, $dbPass, $verbosity);
+
 open ($c, "<", $configFile) or die ("ERROR: Couldn't open configfile $configFile\n");
 while(<$c>){
 	unless($_ =~ /^#/){
-		my ($key,$value)=(split(/=/, $_))[0.1];
+		chomp;
+		my ($key,$value)=(split(/=/, $_))[0,1];
 		if ($key =~ /cheat/){
-			$cheatmode = $value;
-		}elsif($key=~/granular_data_file/){
-			$granular_data = $value;
-		}elsif($key=~/aggregate_data_file/){
-			$aggregate_data = $value;
-		}elsif($key=~/ssh_user/){
-			$user = $value;
-		}elsif($key=~/ssh_host/){
-			$host = $value;
-		}elsif($key=~/ssh_dir/){
-			$destinationDir = $value;
-		}elsif($key=~/default_number_of_questions/){
+			if ($value =~ /^yes$/i){
+				$cheatmde = 1;
+			}else{
+				$cheatmode = 0;
+			}
+		}elsif($key=~/db_host/i){
+			$dbHost = $value;
+		}elsif($key=~/db_port/i){
+			$dbPort = $value;
+		}elsif($key=~/db_name/i){
+			$dbName = $value;
+		}elsif($key=~/db_user/i){
+			$dbUser = $value;
+		}elsif($key=~/db_pass/i){
+			$dbPass = $value;
+		}elsif($key=~/db_host/i){
+			$dbHost=$value;
+		}elsif($key=~/mathsdir/i){
+			$mathsdir = $value;
+		}elsif($key=~/default_number_of_questions/i){
 			$numQs = $value;
-		}elsif($key=~/test_only/){
+		}elsif($key=~/test_only/i){
 			$testOnly = $value;
+		}elsif($key=~/verbosity/i){
+			if($value =~/info/i){$verbosity=1;}
+			if($value =~/debug/i){$verbosity=2;}
 		}else{
 			print STDERR "WARN: Unexpected option: $key\n";
 		}
 	}
 }
+if($verbosity > 1){print STDERR "DEBUG: mathsdir=$mathsdir numQs=$numQs testOnly=$testOnly verbosity=$verbosity cheatmode=$cheatmode\n";}
+if($verbsity > 0){print STDERR "INFO:  dbName=$dbName dbHost=$dbHost dbUser=$dbUser dbPass=$dbPass\n";}
+
+my $dsn = "dbi:mysql:$dbName:$dbHost:$dbPort";
+my $con = DBI->connect($dsn, $dbUser, $dbPass)
+	or die "Error connecting to db";
 
 my $questions;
 if($testOnly =~ /yes/){
+	print "Running in test mode\n";
 	@questions = ("test");
 }else{
 	@questions = ("radians", "differentiation", "sequences_and_series", "coordinate_geometry");
 }
-
-
 close ($c);
 
 my $startTime = time();
-
-$SIG{INT} = \&exit;
+if($verbosity > 1){print STDERR "DEBUG: startTime: $startTime\n";}
+if ($cheatmode =~ /yes/){
+	$cheatmode = 1;
+}else{
+	$cheatmode = 0;
+}
 
 &usage if ($ARGV[0] =~ /\D/);
 my $num = $ARGV[0];
@@ -229,38 +253,37 @@ sub test(){
 sub quiz(){
 	my $num = shift;	# How many questions to ask
 	$count = 0;
-	$start_time = time();
+	$session = time();
 	for ($count = 1; $count <= $num; $count++){
+		my $questionTime=time();
 		print "\n\n$count)\t";	
-		my ($q,$subject) = &ask_question();
+		my ($q,$subject, $cheatmode) = &ask_question();
 		
-		my($sec,$min,$hr,$day,$mon,$yr)=(localtime)[0,1,2,3,4,5];
-		$mon++;
-		$yr+=1900;
-		my $datetime = "$yr $mon $day $hr $min $sec";
-
-		my $line = "$startTime\t$datetime\t$subject\t";
 		if($q =~ /correct/ ){
 			$score++;
 			say "\tCorrect!";
-			$line.="1";
+			$correct ="1";
 		}else{
 			say "\tNope. Expected $q";
-			$line.="0";
+			$correct = "0";
 		}
+		my $answerTime = time - $questionTime;
 		if ($testOnly =~ /yes/){
-			$line.="+";
+			$test = "1";
 		}
-		push (@stats, $line);
+		print "<<$cheatmode>>";
+		my $line = "$startTime\t$datetime\t$subject\t$correct\t$test";
+		my $query = "INSERT INTO granular (session, startTime, questionTime, answerTime, subject, correct, cheatmode, test)";
+			$query.=" VALUES ('$session', FROM_UNIXTIME($session) , FROM_UNIXTIME($questionTime), '$answerTime', '$subject', '$correct', '$cheatmode', '$test')";
+		if($verbosity > 0){print STDERR "INFO  : $query\n"};
+		$query_handle = $con->prepare($query);
+		$query_handle->execute();
 	}
 	$count--;
 	$time = time() - $start_time;
 	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
 	$pc = ( $score / $count  ) * 100;
 	say "Pointless accuracy:".$pc."%";
-	if ($last_score = &last_score){
-		say "Last time you got ${last_score}%";
-	}
 
 	&exit("$count", "$pc", "$time", "$score");
 }
@@ -280,46 +303,11 @@ sub ask_question() {
 	if ($cheatmode != 0){say ($answer)};
 	my $guess = <STDIN>;
 	if ($guess == $answer){
-		return ("correct", $q);
+		return ("correct", $q, $cheatmode);
 	}else{
-		return ($answer, $q);
+		return ($answer, $q, $cheatmode);
 	}
 }
-
-# Writes progress data to file.
-sub simple_progress(){
-	$granular_data = $mathsDir."/".$granular_data;
-	$aggregate_data = $mathsDir."/".$aggregate_data;
-	foreach($granular_data, $aggregate_data){
-		unless(-e $_){
-			`touch $_`;
-		}
-	}
-
-	unless (-d $mathsDir){
-		`mkdir -p $mathsDir`
-	}
-
-	
-	unless (-w $granular_data){
-		warn "Granluar data file $granular_data not writeable. No detailled stats for you\n";
-	}else{
-		open (F,">>$granular_data");
-		foreach(@stats){
-			print F $_."\n";
-		}
-	}
-
-	unless (-w $aggregate_data){
-		warn "Summary data file $aggregate_data not writeable. No summarised stats for you\n";
-	}else{
-		open (F,">>$aggregate_data");
-		print F "$w\t$count\t$pc\t$time\n";
-	}
-
-	`scp $mathsDir/* $user@$server:$destinationDir`;
-}
-
 
 ## Utility  Subs ##
 # # # # # # # # # #
@@ -384,7 +372,6 @@ sub exit {
 	say "You did $count questions in $time seconds"; 
 	say "You scored $pc%";
 
-	&simple_progress($count, $pc, $time);
 	print "exiting...\n";
 	exit 0;
 
