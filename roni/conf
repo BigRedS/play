@@ -1,0 +1,8 @@
+cheatmode=yes
+test_only=yes
+default_number_of_questions=10
+db_host=192.168.1.1
+db_name=roni_maths
+db_user=roni_maths
+db_pass=Rei0GohyeiPh9ab4oza8yshsdhfW32A
+verbosity=debug
