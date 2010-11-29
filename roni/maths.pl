@@ -37,7 +37,7 @@ my $home = $ENV{HOME};
 $SIG{INT} = \&exit;
 
 my $configFile = "$home/.maths/conf";
-my ($cheatmode, $dbHost, $dbName, $dbUser, $dbPass, $verbosity);
+my ($cheatmode, $dbHost, $dbName, $dbUser, $dbPass, $verbosity,$useDb);
 
 open ($c, "<", $configFile) or die ("ERROR: Couldn't open configfile $configFile\n");
 while(<$c>){
@@ -71,6 +71,8 @@ while(<$c>){
 		}elsif($key=~/verbosity/i){
 			if($value =~/info/i){$verbosity=1;}
 			if($value =~/debug/i){$verbosity=2;}
+		}elsif($key=~/write_to_db/){
+			if($value=~/no/){$useDb = 0;}else{$useDb = 1;}
 		}else{
 			print STDERR "WARN: Unexpected option: $key\n";
 		}
@@ -79,9 +81,13 @@ while(<$c>){
 if($verbosity > 1){print STDERR "DEBUG: mathsdir=$mathsdir numQs=$numQs testOnly=$testOnly verbosity=$verbosity cheatmode=$cheatmode\n";}
 if($verbsity > 0){print STDERR "INFO:  dbName=$dbName dbHost=$dbHost dbUser=$dbUser dbPass=$dbPass\n";}
 
-my $dsn = "dbi:mysql:$dbName:$dbHost:$dbPort";
-my $con = DBI->connect($dsn, $dbUser, $dbPass)
-	or die "Error connecting to db";
+if($useDb != 0){
+	if($verbosity > 1){print STDERR "INFO:  Connecting to db ($dbHost)...";}
+	my $dsn = "dbi:mysql:$dbName:$dbHost:$dbPort";
+	my $con = DBI->connect($dsn, $dbUser, $dbPass)
+ 	 or die "Error connecting to db";
+	if($verbosity > 1){print STDERR "done.\n";}
+}
 
 my $questions;
 if($testOnly =~ /yes/){
@@ -103,13 +109,14 @@ if ($cheatmode =~ /yes/){
 &usage if ($ARGV[0] =~ /\D/);
 my $num = $ARGV[0];
 if (!($num > 0)){
-	$num = 100;
+	$num = $numQs;
 }
 
-my $subject = undef;
-if ($ARGV[1]){
-	$subject = $ARGV[1];
-}
+#my $subject = undef;
+#if ($ARGV[1]){
+#	$subject = $ARGV[1];
+#}
+
 my ($now, $count, $pc, $start_time, $score);
 
 # Bunch of welcoming text
@@ -271,19 +278,20 @@ sub quiz(){
 		if ($testOnly =~ /yes/){
 			$test = "1";
 		}
-		print "<<$cheatmode>>";
-		my $line = "$startTime\t$datetime\t$subject\t$correct\t$test";
-		my $query = "INSERT INTO granular (session, startTime, questionTime, answerTime, subject, correct, cheatmode, test)";
+		if($useDb != 0){
+			my $line = "$startTime\t$datetime\t$subject\t$correct\t$test";
+			my $query = "INSERT INTO granular (session, startTime, questionTime, answerTime, subject, correct, cheatmode, test)";
 			$query.=" VALUES ('$session', FROM_UNIXTIME($session) , FROM_UNIXTIME($questionTime), '$answerTime', '$subject', '$correct', '$cheatmode', '$test')";
-		if($verbosity > 0){print STDERR "INFO  : $query\n"};
-		$query_handle = $con->prepare($query);
-		$query_handle->execute();
+			if($verbosity > 0){print STDERR "INFO  : $query\n"};
+			$query_handle = $con->prepare($query);
+			$query_handle->execute();
+		}
 	}
 	$count--;
-	$time = time() - $start_time;
-	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
+	$time = time() - $session;
+#	say "\n\nYou tried $count questions, got $score correct and spent $time seconds doing it.";
 	$pc = ( $score / $count  ) * 100;
-	say "Pointless accuracy:".$pc."%";
+#	say "Pointless accuracy:".$pc."%";
 
 	&exit("$count", "$pc", "$time", "$score");
 }
@@ -366,8 +374,10 @@ sub last_score() {
 
 
 sub exit {
-	$time = time() - $start_time;
-	$pc = ($score/$count)*100;
+	my $count = shift;
+	my $pc = shift;
+	my $time = shift;
+	my $score = shift;
 
 	say "You did $count questions in $time seconds"; 
 	say "You scored $pc%";
