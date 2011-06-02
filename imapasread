@@ -1,0 +1,50 @@
+#! /usr/bin/perl
+
+# imapasread
+
+# Logs in to an IMAP server and marks the contents of prescribed folders as read, for
+# when they're being used more as document stores than mail folders.
+
+# Behaviour is controlled by editing values at the top of the script - see below, above
+# the line '# The script!'.
+
+# Written by Avi in 2011
+
+use strict;
+use Mail::IMAPClient;
+use 5.010;
+
+# Credentials:
+my $server = 'servername:993';
+my $user = 'username';
+my $pass ='password';
+
+# List of folders to mark read:
+my @markread = qw/INBOX cvs danger.supportincoming good good.attach techteam.logs urgent ssl danger.supportincoming/;
+
+
+# The script!
+
+my $imap = Mail::IMAPClient->new(
+    Server   => $server,
+    User     => $user,
+    Password => $pass,
+    Ssl      => 1,
+    Uid		=> 1
+) or die "Error: $@\n";
+$imap->connect;
+
+# Get a list of subscribed folders, as keys to a hash:
+my @subscribed = $imap->subscribed;
+
+my %folders = map { $_ => 1 } @subscribed;
+
+foreach(@markread){
+	if ( $folders{$_} ) {
+		$imap->select($_);
+		my @unread = $imap->unseen;	
+		$imap->set_flag("Seen",@unread);
+	}else{
+		say "$_ doesn't exist";
+	}	
+}
