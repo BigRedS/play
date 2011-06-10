@@ -1,16 +1,26 @@
 #! /usr/bin/perl
 
+# Munin plugin for monitoring the number of rows in a database 
+
 use strict;
 use DBI;
 
+# Credentials with which to connect to the db.
 my $dbhost = "localhost";
 my $dbuser = "test";
 my $dbpass = "password";
 
+# Table on which to count the rows
 my $db = "test";
 my $table = "stuff";
 
-my $query = "select count(*) from stuff";
+
+my $query = "select count(*) from $table";
+
+
+#graph_vtitle is the title of the graph
+#graph_vlabel is the vertical label
+#count.label is the label for the line on the graph
 
 if ($ARGV[0] eq 'config'){
 print <<EOF;
