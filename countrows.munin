@@ -1,0 +1,28 @@
+#! /usr/bin/perl
+
+use strict;
+use DBI;
+
+my $dbhost = "localhost";
+my $dbuser = "test";
+my $dbpass = "password";
+
+my $db = "test";
+my $table = "stuff";
+
+my $query = "select count(*) from stuff";
+
+if ($ARGV[0] eq 'config'){
+print <<EOF;
+graph_title Rows in registration table
+graph_vlabel count
+count.label Number of rows
+EOF
+exit 0;
+}
+
+my $db = DBI->connect("DBI:mysql:$db:host=$dbhost", $dbuser, $dbpass);
+
+my $numRows =($db->selectrow_array($query))[0];
+
+print "count.value = $numRows\n";
