@@ -1,0 +1,88 @@
+#! /usr/bin/perl
+
+#imapasread-temporarily 
+
+# Marks all unred mail in a particular folder as read, and can then go 
+# back and mark all those mails as unread again afterwards. Handy for 
+# those times when for some reason you need an entire folder to be unread
+# for, say, five minutes at a time to avoid annoying SMS messages.
+
+# Written by Avi in 2011
+
+use strict;
+use Mail::IMAPClient;
+use 5.010;
+
+# Where to store a list of mail marked as read.
+my $logfile = $ENV{'HOME'}."/.readmail";
+
+
+# Credentials:
+
+# hostname:port-number , see below for SSL
+my $server = 'mail.mydomain.com:993';
+
+# username on first line, password on second. Nothing else in file:
+my $credentialsFile = $ENV{'HOME'}."/.credentialss";
+
+open(my $fh, "<", $credentialsFile);
+my ($user,$pass) = (<$fh>);
+close($fh);
+chomp($user,$pass);
+
+
+my $action = $ARGV[0];
+	if($action =~ /^$/){
+		print &usage;
+		exit 1;
+	}
+my $imap = Mail::IMAPClient->new(
+    Server   => $server,
+    User     => $user,
+    Password => $pass,
+    Ssl      => 1,
+    Uid		=> 1
+) or die "Error: $@\n";
+$imap->connect
+  or die "Error: $@\n";
+
+given($action){
+	when(/^read$/){
+		print "Reading mail\n";
+		open(my $log, ">", $logfile) or die "Error opening log file $logfile for writing";
+		$imap->select('staff-memos');
+		my @unread = $imap->unseen;
+		if($#unread > 0){
+			print "Reading:\n\t".join("\n\t", @unread);
+			print $log join("\n", @unread);
+			$imap->set_flag("Seen",@unread);
+		}
+		print "\n";
+		close($log);
+	}
+	when(/^unread$/){
+		print "unreading mail\n";
+		open(my $log, "<", $logfile) or die "Error opening log file $logfile for reading";
+		$imap->select('staff-memos');
+		my @read = <$log>;
+		foreach(@read){chomp($_);}
+		print "Unreading:\n\t".join("\n\t", @read);
+		$imap->unset_flag("Seen", @read);
+		close($log);
+		print "\n";
+	}
+	default{
+		print &usage;
+		exit 1;
+	}
+}
+
+sub usage{
+return <<EOF;
+usage:
+imapasread-temp <action>
+action may be either 'read' or 'unread'
+see the script for more details
+EOF
+
+}
